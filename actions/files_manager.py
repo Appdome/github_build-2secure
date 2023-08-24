@@ -65,6 +65,7 @@ def main():
     keystore = args.keystore
     provision_profiles = args.provision_profiles
     entitlements = args.entitlements
+    print(keystore)
 
     ios_flag = True if app_file.endswith('.ipa') else False
     if not os.path.isdir("./files"):
