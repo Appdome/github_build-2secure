@@ -35,7 +35,11 @@ def decode_base64(s, file_path):
 
 def download_file(url, dest_file):
     import requests
-    response = requests.get(url)
+    from urllib.parse import urlparse, parse_qs
+    url_parts = urlparse(url)
+    query_params = parse_qs(url_parts.query)
+    clean_url = f"{url_parts.scheme}://{url_parts.netloc}{url_parts.path}"
+    response = requests.get(clean_url, params=query_params)
     if response.status_code < 300:
         with open(dest_file, "wb") as file:
             file.write(response.content)
