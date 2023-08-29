@@ -12,6 +12,8 @@ def parse_args():
                         help='None-protected application file')
     parser.add_argument("-k", dest='keystore', required=False,
                         help='Keystore file', default=None)
+    parser.add_argument("-c", dest='certificate', required=False,
+                        help='Certificate file', default=None)
     parser.add_argument("-pp", dest='provision_profiles', required=False,
                         help="provision_profiles", default=None)
     parser.add_argument("-e", dest='entitlements', required=False,
@@ -63,6 +65,7 @@ def main():
         exit(1)
 
     keystore = args.keystore
+    certificate = args.certificate
     provision_profiles = args.provision_profiles
     entitlements = args.entitlements
     print(keystore)
@@ -88,6 +91,17 @@ def main():
             decode_base64(keystore, f"./files/cert.p12") if ios_flag else decode_base64(keystore, f"./files/cert.keystore")
         else:
             print(f"Error couldn't compose {keystore}")
+            exit(1)
+
+    if certificate and certificate != "None":
+        if certificate.startswith('htt'):
+            download_file(certificate, f"./files/cert.p12") if ios_flag else download_file(certificate, f"./files/cert.keystore")
+        elif os.path.exists(certificate):
+            copy_files(certificate, f"./files/cert.p12") if ios_flag else copy_files(certificate, f"./files/cert.keystore")
+        elif is_base64(certificate):
+            decode_base64(certificate, f"./files/cert.p12") if ios_flag else decode_base64(certificate, f"./files/cert.keystore")
+        else:
+            print(f"Error couldn't compose {certificate}")
             exit(1)
 
     if provision_profiles and provision_profiles != "None":

@@ -58,6 +58,14 @@ inputs:
     type: boolean
     default: "false"
     required: false
+  CERTIFICATE_FILE:
+    description: 'Certificate sign file'
+    default: 'None'
+    required: false
+  CERTIFICATE_PASSWORD:
+    description: 'Certificate password sign file'
+    default: 'None'
+    required: false
   TEAM-ID:
     description: 'your team-id'
     default: 'None'
@@ -102,16 +110,16 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/github_build-2secure
-        ref: refs/heads/eldan_output_name
+        ref: refs/heads/main
         path: actions
     - name: permissions
       run: chmod +x ./actions/actions/appdome_build_sign.py | chmod +x ./actions/actions/files_manager.py
       shell: bash
     - name: Run download action files
-      run: python3 ./actions/actions/files_manager.py -a "${{ inputs.APP_FILE }}" -k "${{ inputs.KEYSTORE_FILE }}" -pp "${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}" -e "${{ inputs.ENTITLEMENTS_FILE }}"
+      run: python3 ./actions/actions/files_manager.py -a "${{ inputs.APP_FILE }}" -k "${{ inputs.KEYSTORE_FILE }}" -c "${{ inputs.CERTIFICATE_FILE }}" -pp "${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}" -e "${{ inputs.ENTITLEMENTS_FILE }}"
       shell: bash
     - name: Run appdome bash action files
-      run: python3 ./actions/actions/appdome_build_sign.py -sign ${{ inputs.SIGN_OPTIONS }} -api_key ${{ inputs.APPDOME_API_TOKEN }} -fs ${{ inputs.FUSION_SET_ID }} -kp ${{ inputs.KEYSTORE_PASSWORD }} -ka ${{ inputs.KEYSTORE_ALIAS }} -kkp ${{ inputs.KEYSTORE_KEY_PASSWORD }} -team_id ${{ inputs.TEAM-ID }} -google-play-signing ${{ inputs.GOOGLE-PLAY-SIGNING }} -signing_fingerprint ${{ inputs.SIGN_FINGERPRINT }} -bl ${{ inputs.BUILD_WITH_LOGS }} --sign_second_output ${{inputs.SECOND_OUTPUT}} -bt ${{inputs.BUILD_TO_TEST}} -o ${{inputs.OUTPUT_APP_NAME}}
+      run: python3 ./actions/actions/appdome_build_sign.py -sign ${{ inputs.SIGN_OPTIONS }} -api_key ${{ inputs.APPDOME_API_TOKEN }} -fs ${{ inputs.FUSION_SET_ID }} -cp ${{ inputs.CERTIFICATE_PASSWORD }} -kp ${{ inputs.KEYSTORE_PASSWORD }} -ka ${{ inputs.KEYSTORE_ALIAS }} -kkp ${{ inputs.KEYSTORE_KEY_PASSWORD }} -team_id ${{ inputs.TEAM-ID }} -google-play-signing ${{ inputs.GOOGLE-PLAY-SIGNING }} -signing_fingerprint ${{ inputs.SIGN_FINGERPRINT }} -bl ${{ inputs.BUILD_WITH_LOGS }} --sign_second_output ${{inputs.SECOND_OUTPUT}} -bt ${{inputs.BUILD_TO_TEST}} -o ${{inputs.OUTPUT_APP_NAME}}
       shell: bash
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
