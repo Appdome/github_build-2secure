@@ -4,6 +4,7 @@ import sys
 import os
 import subprocess
 
+DEFAULT_OUTPUT_NAME = "Appdome_secured_app"
 
 def parse_args():
     """
@@ -35,6 +36,8 @@ def parse_args():
                         help="Universal apk output for aab apps?")
     parser.add_argument("-bt", dest='build_to_test', required=False,
                         help="SAUCELABS OR BITBAR OR LAMBDATEST OR BROWSERSTACK")
+    parser.add_argument("-o", dest='output_name', required=False,
+                        help="Output app name")
     return parser.parse_args()
 
 sys.path.extend([os.path.join(sys.path[0], '../..')])
@@ -102,6 +105,7 @@ def main():
     appdome_api_key = args.appdome_api_key
     fusion_set = args.fusion_set
     keystore_pass = args.keystore_pass
+    output_file_name = args.output_name if args.output_name != "None" else DEFAULT_OUTPUT_NAME
     extensions = ["*.apk", "*.aab", "*.ipa"]
     app_file = [file for extension in extensions for file in glob.glob(f"./files/{extension}")]
     if len(app_file) == 0:
@@ -120,7 +124,7 @@ def main():
     validate_args(platform, args, keystore_file, provision_profiles, entitlements)
 
     build_with_logs = " -bl" if args.build_with_logs != "false" else ""
-    sign_second_output = " --sign_second_output ./output/Appdome_secured_app_second_output.apk" if \
+    sign_second_output = f" --sign_second_output ./output/{output_file_name}_second_output.apk" if \
         (args.sign_second_output != "false" and app_ext == ".aab") else ""
     build_to_test = f" -bt {args.build_to_test}" if args.build_to_test != "None" else ""
     team_id = f"--team_id {args.team_id}" if args.team_id != "None" else ""
@@ -132,7 +136,7 @@ def main():
 
         cmd = f"python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} --app {app_file} " \
               f"--sign_on_appdome -fs {fusion_set} {team_id} --keystore {keystore_file[0]} " \
-              f"--keystore_pass {keystore_pass} --output ./output/Appdome_secured_app{app_ext} " \
+              f"--keystore_pass {keystore_pass} --output ./output/{output_file_name}{app_ext} " \
               f"--certificate_output ./output/certificate.pdf {keystore_alias} {keystore_key_pass} " \
               f"{provision_profiles} {entitlements}{build_with_logs}{sign_second_output}{build_to_test}"
 
@@ -144,7 +148,7 @@ def main():
 
         cmd = f"python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --private_signing -fs {fusion_set} {team_id} " \
-              f"--output ./output/Appdome_secured_app{app_ext} --certificate_output ./output/certificate.pdf " \
+              f"--output ./output/{output_file_name}{app_ext} --certificate_output ./output/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles}{build_with_logs}{sign_second_output}" \
               f"{build_to_test}"
 
@@ -156,7 +160,7 @@ def main():
 
         cmd = f"python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --auto_dev_private_signing -fs {fusion_set} {team_id} " \
-              f"--output ./output/Appdome_secured_app{app_ext} --certificate_output ./output/certificate.pdf " \
+              f"--output ./output/{output_file_name}{app_ext} --certificate_output ./output/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles} {entitlements}{build_with_logs}" \
               f"{build_to_test}"
         subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
