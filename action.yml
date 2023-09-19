@@ -106,6 +106,9 @@ runs:
     - name: Install requirements
       run: sudo pip3 install -r appdome/requirements.txt
       shell: bash
+    - name: Print
+      run: sudo ls
+      shell: bash
     - name: Run download action files
       run: python3 ./actions/files_manager.py -a "${{ inputs.APP_FILE }}" -k "${{ inputs.KEYSTORE_FILE }}" -c "${{ inputs.CERTIFICATE_FILE }}" -pp "${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}" -e "${{ inputs.ENTITLEMENTS_FILE }}"
       shell: bash
