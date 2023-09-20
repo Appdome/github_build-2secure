@@ -109,6 +109,8 @@ def main():
     keystore_pass = args.keystore_pass
     certificate_pass = args.certificate_pass
     output_file_name = args.output_name if args.output_name != "None" else DEFAULT_OUTPUT_NAME
+    output_file_name = os.path.basename(output_file_name)
+    output_file_name, _ = os.path.splitext(output_file_name)
     extensions = ["*.apk", "*.aab", "*.ipa"]
     app_file = [file for extension in extensions for file in glob.glob(f"./files/{extension}")]
     if len(app_file) == 0:
