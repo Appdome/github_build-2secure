@@ -164,7 +164,7 @@ def main():
 
         cmd = f"python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --auto_dev_private_signing -fs {fusion_set} {team_id} " \
-              f"--output ./output/{output_file_name}{app_ext} --certificate_output ./output/certificate.pdf " \
+              f"--output ./output/{output_file_name}.sh --certificate_output ./output/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles} {entitlements}{build_with_logs}" \
               f"{build_to_test}"
         subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
