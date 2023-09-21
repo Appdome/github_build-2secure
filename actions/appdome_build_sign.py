@@ -144,7 +144,8 @@ def main():
               f"--sign_on_appdome -fs {fusion_set} {team_id} --keystore {keystore_file[0]} " \
               f"--keystore_pass {keystore_pass} --output ./output/{output_file_name}{app_ext} " \
               f"--certificate_output ./output/certificate.pdf {keystore_alias} {keystore_key_pass} " \
-              f"{provision_profiles} {entitlements}{build_with_logs}{sign_second_output}{build_to_test}"
+              f"{provision_profiles} {entitlements}{build_with_logs}{sign_second_output}{build_to_test}  " \
+              f"--deobfuscation_script_output ./output/deobfuscation_scripts.zip"
 
         subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
 
@@ -156,7 +157,7 @@ def main():
               f"--app {app_file} --private_signing -fs {fusion_set} {team_id} " \
               f"--output ./output/{output_file_name}{app_ext} --certificate_output ./output/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles}{build_with_logs}{sign_second_output}" \
-              f"{build_to_test}"
+              f"{build_to_test} --deobfuscation_script_output ./output/deobfuscation_scripts.zip"
 
         subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
 
@@ -168,7 +169,7 @@ def main():
               f"--app {app_file} --auto_dev_private_signing -fs {fusion_set} {team_id} " \
               f"--output ./output/{output_file_name}.sh --certificate_output ./output/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles} {entitlements}{build_with_logs}" \
-              f"{build_to_test}"
+              f"{build_to_test}  --deobfuscation_script_output ./output/deobfuscation_scripts.zip"
         subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
     else:
         print("Signing option not found!\nValid signs: AUTO_SIGNING/PRIVATE_SIGNING/AUTO_DEV_SIGNING")
