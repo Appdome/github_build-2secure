@@ -73,13 +73,13 @@ def main():
     ios_flag = None
     if '.ipa' in app_file:
         ios_flag = True
-        ext = '.ipa'
+        ext = 'ipa'
     elif '.apk' in app_file:
         ios_flag = False
-        ext = '.apk'
+        ext = 'apk'
     elif'.aab' in app_file:
         ios_flag = False
-        ext = '.aab'
+        ext = 'aab'
     else:
         print("App file specified is invalid")
         exit(1)
