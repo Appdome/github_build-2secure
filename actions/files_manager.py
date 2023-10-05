@@ -139,10 +139,10 @@ def main():
             decode_base64(entitlements, "./files/entitlements/0.plist")
         elif entitlements.startswith('htt'):
             for index, url in enumerate(entitlements.split(',')):
-                download_file(url, f"./files/entitlements/{index}.plist")
+                download_file(url.strip(), f"./files/entitlements/{index}.plist")
         elif os.path.exists(entitlements.split(',')[0]):
             for index, path in enumerate(entitlements.split(',')):
-                copy_files(path, f"./files/entitlements/{index}.plist")
+                copy_files(path.strip(), f"./files/entitlements/{index}.plist")
         else:
             print(f"Error couldn't compose {entitlements}")
             exit(1)
