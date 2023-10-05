@@ -77,12 +77,9 @@ def main():
     elif '.apk' in app_file:
         ios_flag = False
         ext = 'apk'
-    elif'.aab' in app_file:
+    elif '.aab' in app_file:
         ios_flag = False
         ext = 'aab'
-    else:
-        print("App file specified is invalid")
-        exit(1)
 
     if not os.path.isdir("./files"):
         os.mkdir("./files")
