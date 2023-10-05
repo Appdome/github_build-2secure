@@ -124,10 +124,10 @@ def main():
             decode_base64(provision_profiles, "./files/provision_profiles/0.mobileprovision")
         elif provision_profiles.startswith('htt'):
             for index, url in enumerate(provision_profiles.split(',')):
-                download_file(url, f"./files/provision_profiles/{index}.mobileprovision")
+                download_file(url.strip(), f"./files/provision_profiles/{index}.mobileprovision")
         elif os.path.exists(provision_profiles.split(',')[0]):
             for index, path in enumerate(provision_profiles.split(',')):
-                copy_files(path, f"./files/provision_profiles/{index}.mobileprovision")
+                copy_files(path.strip(), f"./files/provision_profiles/{index}.mobileprovision")
         else:
             print(f"Error couldn't compose {provision_profiles}")
             exit(1)
