@@ -68,16 +68,29 @@ def main():
     certificate = args.certificate
     provision_profiles = args.provision_profiles
     entitlements = args.entitlements
-    print(keystore)
 
-    ios_flag = True if app_file.endswith('.ipa') else False
+    ext = None
+    ios_flag = None
+    if '.ipa' in app_file:
+        ios_flag = True
+        ext = '.ipa'
+    elif '.apk' in app_file:
+        ios_flag = False
+        ext = '.apk'
+    elif'.aab' in app_file:
+        ios_flag = False
+        ext = '.aab'
+    else:
+        print("App file specified is invalid")
+        exit(1)
+
     if not os.path.isdir("./files"):
         os.mkdir("./files")
 
     if app_file.startswith('htt'):
-        download_file(app_file, f"./files/{os.path.basename(app_file)}")
+        download_file(app_file, f"./files/vanilla_app.{ext}")
     elif os.path.exists(app_file):
-        copy_files(app_file, f"./files/{os.path.basename(app_file)}")
+        copy_files(app_file, f"./files/vanilla_app.{ext}")
     else:
         print(f"Error couldn't compose {app_file}")
         exit(1)
