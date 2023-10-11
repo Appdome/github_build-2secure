@@ -121,6 +121,7 @@ runs:
     - name: Run appdome bash action files
       run: python3 ./actions/actions/appdome_build_sign.py -sign ${{ inputs.SIGN_OPTIONS }} -api_key ${{ inputs.APPDOME_API_TOKEN }} -fs ${{ inputs.FUSION_SET_ID }} -cp ${{ inputs.CERTIFICATE_PASSWORD }} -kp ${{ inputs.KEYSTORE_PASSWORD }} -ka ${{ inputs.KEYSTORE_ALIAS }} -kkp ${{ inputs.KEYSTORE_KEY_PASSWORD }} -team_id ${{ inputs.TEAM-ID }} -google-play-signing ${{ inputs.GOOGLE-PLAY-SIGNING }} -signing_fingerprint ${{ inputs.SIGN_FINGERPRINT }} -bl ${{ inputs.BUILD_WITH_LOGS }} --sign_second_output ${{inputs.SECOND_OUTPUT}} -bt ${{inputs.BUILD_TO_TEST}} -o ${{inputs.OUTPUT_APP_NAME}}
       shell: bash
+
     - name: Determine OUTPUT_APP_NAME directory
       id: get-output-dir
       run: |
@@ -150,9 +151,9 @@ runs:
     - name: Find secure app file
       id: secure_app_file
       run: |
-         FILE=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ inputs.OUTPUT_APP_NAME }}.*" )
+         FILE=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}.*" )
          echo "APPDOME_SECURED_APP=$FILE" >> $GITHUB_ENV
-         FILE_SECOND_OUTPUT=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ inputs.OUTPUT_APP_NAME }}_second_output.apk" )
+         FILE_SECOND_OUTPUT=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}_second_output.apk" )
          if [ -e "$FILE_SECOND_OUTPUT" ]; then
             echo "APPDOME_SECURED_APP_SECOND_OUTPUT=$FILE_SECOND_OUTPUT" >> $GITHUB_ENV
          fi
