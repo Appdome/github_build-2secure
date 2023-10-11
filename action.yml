@@ -132,10 +132,13 @@ runs:
         else
           OUTPUT_PATH="./output/"
         fi
+        # Remove the file extension (if it exists) and store it in a new variable
+        OUTPUT_APP_NAME_WITHOUT_EXTENSION=$(basename -- "$OUTPUT_APP_NAME" | cut -d. -f1)
         echo "OUTPUT_DIR=$OUTPUT_PATH" >> $GITHUB_OUTPUT
+        echo "OUTPUT_APP_NAME_WITHOUT_EXTENSION=$OUTPUT_APP_NAME_WITHOUT_EXTENSION" >> $GITHUB_OUTPUT
       shell: bash
       env:
-       INPUTS_OUTPUT_APP_NAME: ${{ inputs.OUTPUT_APP_NAME }}
+        INPUTS_OUTPUT_APP_NAME: ${{ inputs.OUTPUT_APP_NAME }}
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
@@ -147,9 +150,9 @@ runs:
     - name: Find secure app file
       id: secure_app_file
       run: |
-         FILE=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ inputs.OUTPUT_APP_NAME }}.*" )
+         FILE=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}.*" )
          echo "APPDOME_SECURED_APP=$FILE" >> $GITHUB_ENV
-         FILE_SECOND_OUTPUT=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ inputs.OUTPUT_APP_NAME }}_second_output.apk" )
+         FILE_SECOND_OUTPUT=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}_second_output.apk" )
          if [ -e "$FILE_SECOND_OUTPUT" ]; then
             echo "APPDOME_SECURED_APP_SECOND_OUTPUT=$FILE_SECOND_OUTPUT" >> $GITHUB_ENV
          fi
