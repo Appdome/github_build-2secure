@@ -132,10 +132,13 @@ runs:
         else
           OUTPUT_PATH="./output/"
         fi
+        # Remove the file extension (if it exists) and store it in a new variable
+        OUTPUT_APP_NAME_WITHOUT_EXTENSION=$(basename -- "$OUTPUT_APP_NAME" | cut -d. -f1)
         echo "OUTPUT_DIR=$OUTPUT_PATH" >> $GITHUB_OUTPUT
+        echo "OUTPUT_APP_NAME_WITHOUT_EXTENSION=$OUTPUT_APP_NAME_WITHOUT_EXTENSION" >> $GITHUB_OUTPUT
       shell: bash
       env:
-       INPUTS_OUTPUT_APP_NAME: ${{ inputs.OUTPUT_APP_NAME }}
+        INPUTS_OUTPUT_APP_NAME: ${{ inputs.OUTPUT_APP_NAME }}
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
