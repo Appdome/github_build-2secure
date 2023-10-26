@@ -139,13 +139,15 @@ def main():
     if sign_option == 'SIGN_ON_APPDOME':
         keystore_alias = f"--keystore_alias {args.keystore_alias}" if args.keystore_alias != "None" else ""
         keystore_key_pass = f"--key_pass {args.keystore_key_pass}" if args.keystore_key_pass != "None" else ""
+        google_play_signing = f"--google_play_signing" if args.google_play_signing != "false" else ""
+        signing_fingerprint = f"--signing_fingerprint {args.signing_fingerprint}" if args.signing_fingerprint != "None" else ""
 
         cmd = f"python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} --app {app_file} " \
               f"--sign_on_appdome -fs {fusion_set} {team_id} --keystore {keystore_file[0]} " \
               f"--keystore_pass {keystore_pass} --output ./output/{output_file_name}{app_ext} " \
               f"--certificate_output ./output/certificate.pdf {keystore_alias} {keystore_key_pass} " \
               f"{provision_profiles} {entitlements}{build_with_logs}{sign_second_output}{build_to_test}  " \
-              f"--deobfuscation_script_output ./output/deobfuscation_scripts.zip"
+              f"--deobfuscation_script_output ./output/deobfuscation_scripts.zip {google_play_signing} {signing_fingerprint}"
 
         subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
 
