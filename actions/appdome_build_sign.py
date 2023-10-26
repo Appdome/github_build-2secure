@@ -4,6 +4,7 @@ import sys
 import os
 import subprocess
 
+DEFAULT_OUTPUT_PATH = './output'
 DEFAULT_OUTPUT_NAME = "Appdome_secured_app"
 
 def parse_args():
@@ -102,13 +103,14 @@ def validate_args(platform, arguments, keystore_file, provision_profiles, entitl
 
 def main():
     print(args)
-    os.makedirs('./output', exist_ok=True)
     sign_option = args.sign_option
     appdome_api_key = args.appdome_api_key
     fusion_set = args.fusion_set
     keystore_pass = args.keystore_pass
     certificate_pass = args.certificate_pass
     output_file_name = args.output_name if args.output_name != "None" else DEFAULT_OUTPUT_NAME
+    output_path = os.path.dirname(output_file_name) if os.path.dirname(output_file_name) != "" else DEFAULT_OUTPUT_PATH
+    os.makedirs(output_path, exist_ok=True)
     output_file_name = os.path.basename(output_file_name)
     output_file_name, _ = os.path.splitext(output_file_name)
     extensions = ["*.apk", "*.aab", "*.ipa"]
@@ -130,7 +132,7 @@ def main():
     validate_args(platform, args, keystore_file, provision_profiles, entitlements, keystore_pass)
 
     build_with_logs = " -bl" if args.build_with_logs != "false" else ""
-    sign_second_output = f" --sign_second_output ./output/{output_file_name}_second_output.apk" if \
+    sign_second_output = f" --sign_second_output {output_path}/{output_file_name}_second_output.apk" if \
         (args.sign_second_output != "false" and app_ext == ".aab") else ""
     build_to_test = f" -bt {args.build_to_test}" if args.build_to_test != "None" else ""
     team_id = f"--team_id {args.team_id}" if args.team_id != "None" else ""
@@ -144,10 +146,10 @@ def main():
 
         cmd = f"python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} --app {app_file} " \
               f"--sign_on_appdome -fs {fusion_set} {team_id} --keystore {keystore_file[0]} " \
-              f"--keystore_pass {keystore_pass} --output ./output/{output_file_name}{app_ext} " \
-              f"--certificate_output ./output/certificate.pdf {keystore_alias} {keystore_key_pass} " \
+              f"--keystore_pass {keystore_pass} --output {output_path}/{output_file_name}{app_ext} " \
+              f"--certificate_output {output_path}/certificate.pdf {keystore_alias} {keystore_key_pass} " \
               f"{provision_profiles} {entitlements}{build_with_logs}{sign_second_output}{build_to_test}  " \
-              f"--deobfuscation_script_output ./output/deobfuscation_scripts.zip {google_play_signing} {signing_fingerprint}"
+              f"--deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {google_play_signing} {signing_fingerprint}"
 
         subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
 
@@ -157,9 +159,9 @@ def main():
 
         cmd = f"python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --private_signing -fs {fusion_set} {team_id} " \
-              f"--output ./output/{output_file_name}{app_ext} --certificate_output ./output/certificate.pdf " \
+              f"--output {output_path}/{output_file_name}{app_ext} --certificate_output {output_path}/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles}{build_with_logs}{sign_second_output}" \
-              f"{build_to_test} --deobfuscation_script_output ./output/deobfuscation_scripts.zip"
+              f"{build_to_test} --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip"
 
         subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
 
@@ -169,9 +171,9 @@ def main():
 
         cmd = f"python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --auto_dev_private_signing -fs {fusion_set} {team_id} " \
-              f"--output ./output/{output_file_name}.sh --certificate_output ./output/certificate.pdf " \
+              f"--output {output_path}/{output_file_name}.sh --certificate_output {output_path}/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles} {entitlements}{build_with_logs}" \
-              f"{build_to_test}  --deobfuscation_script_output ./output/deobfuscation_scripts.zip"
+              f"{build_to_test}  --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip"
         subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
     else:
         print("Signing option not found!\nValid signs: AUTO_SIGNING/PRIVATE_SIGNING/AUTO_DEV_SIGNING")

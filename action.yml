@@ -121,20 +121,35 @@ runs:
     - name: Run appdome bash action files
       run: python3 ./actions/actions/appdome_build_sign.py -sign ${{ inputs.SIGN_OPTIONS }} -api_key ${{ inputs.APPDOME_API_TOKEN }} -fs ${{ inputs.FUSION_SET_ID }} -cp ${{ inputs.CERTIFICATE_PASSWORD }} -kp ${{ inputs.KEYSTORE_PASSWORD }} -ka ${{ inputs.KEYSTORE_ALIAS }} -kkp ${{ inputs.KEYSTORE_KEY_PASSWORD }} -team_id ${{ inputs.TEAM-ID }} -google-play-signing ${{ inputs.GOOGLE-PLAY-SIGNING }} -signing_fingerprint ${{ inputs.SIGN_FINGERPRINT }} -bl ${{ inputs.BUILD_WITH_LOGS }} --sign_second_output ${{inputs.SECOND_OUTPUT}} -bt ${{inputs.BUILD_TO_TEST}} -o ${{inputs.OUTPUT_APP_NAME}}
       shell: bash
+    - name: Determine OUTPUT_APP_NAME directory
+      id: get-output-dir
+      run: |
+        OUTPUT_APP_NAME="${{ inputs.OUTPUT_APP_NAME }}"
+        if [ -z "$OUTPUT_APP_NAME" ]; then
+          OUTPUT_PATH="./output/"
+        elif [[ "$OUTPUT_APP_NAME" == */* ]]; then
+          OUTPUT_PATH="$(dirname "$OUTPUT_APP_NAME")/"
+        else
+          OUTPUT_PATH="./output/"
+        fi
+        echo "OUTPUT_DIR=$OUTPUT_PATH" >> $GITHUB_OUTPUT
+      shell: bash
+      env:
+       INPUTS_OUTPUT_APP_NAME: ${{ inputs.OUTPUT_APP_NAME }}
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: workflow-artifacts
-        path: ./output/
+        path: ${{ steps.get-output-dir.outputs.OUTPUT_DIR }}
     - name: List files in output directory
-      run: ls -al ./output/
+      run: ls -al "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}"
       shell: bash
     - name: Find secure app file
       id: secure_app_file
       run: |
-         FILE=$(find ./output/ -type f -name "${{ inputs.OUTPUT_APP_NAME }}.*" )
+         FILE=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ inputs.OUTPUT_APP_NAME }}.*" )
          echo "APPDOME_SECURED_APP=$FILE" >> $GITHUB_ENV
-         FILE_SECOND_OUTPUT=$(find ./output/ -type f -name "${{ inputs.OUTPUT_APP_NAME }}_second_output.apk" )
+         FILE_SECOND_OUTPUT=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ inputs.OUTPUT_APP_NAME }}_second_output.apk" )
          if [ -e "$FILE_SECOND_OUTPUT" ]; then
             echo "APPDOME_SECURED_APP_SECOND_OUTPUT=$FILE_SECOND_OUTPUT" >> $GITHUB_ENV
          fi
