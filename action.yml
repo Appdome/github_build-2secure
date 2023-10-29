@@ -125,7 +125,7 @@ runs:
       id: get-output-dir
       run: |
         OUTPUT_APP_NAME="${{ inputs.OUTPUT_APP_NAME }}"
-        if [ -z "$OUTPUT_APP_NAME" ]; then # Default values
+        if [ -z "$OUTPUT_APP_NAME" ] || [ "$OUTPUT_APP_NAME" == "None" ]; then # Default values
           OUTPUT_PATH="./output/"
           OUTPUT_APP_NAME_WITHOUT_EXTENSION="Appdome_secured_app" 
         elif [[ "$OUTPUT_APP_NAME" == */* ]]; then
