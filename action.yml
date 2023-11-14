@@ -58,6 +58,11 @@ inputs:
     type: boolean
     default: "false"
     required: false
+  GOOGLE_PLAY_SIGNING:
+    description: 'Google Play App Signing program'
+    type: boolean
+    default: "false"
+    required: false
   CERTIFICATE_FILE:
     description: 'Certificate sign file'
     default: 'None'
@@ -67,6 +72,10 @@ inputs:
     default: 'None'
     required: false
   TEAM-ID:
+    description: 'your team-id'
+    default: 'None'
+    required: false
+  TEAM_ID:
     description: 'your team-id'
     default: 'None'
     required: false
@@ -97,6 +106,14 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Convention fix
+      id: convention-fix
+      run: |
+        echo "TEAM_ID=${{ coalesce(inputs.TEAM_ID, inputs.TEAM-ID) }}" >> $GITHUB_OUTPUT
+        echo "GOOGLE_PLAY_SIGNING=${{ coalesce(inputs.GOOGLE_PLAY_SIGNING, inputs.GOOGLE-PLAY-SIGNING) }}" >> $GITHUB_OUTPUT
+        echo "TEAM_ID: $TEAM_ID"
+        echo "GOOGLE_PLAY_SIGNING: $GOOGLE_PLAY_SIGNING"
+      shell: bash
     - name: Cloning appdome-api-python github repository
       uses: actions/checkout@master
       with:
@@ -119,7 +136,7 @@ runs:
       run: python3 ./actions/actions/files_manager.py -a "${{ inputs.APP_FILE }}" -k "${{ inputs.KEYSTORE_FILE }}" -c "${{ inputs.CERTIFICATE_FILE }}" -pp "${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}" -e "${{ inputs.ENTITLEMENTS_FILE }}"
       shell: bash
     - name: Run appdome bash action files
-      run: python3 ./actions/actions/appdome_build_sign.py -sign ${{ inputs.SIGN_OPTIONS }} -api_key ${{ inputs.APPDOME_API_TOKEN }} -fs ${{ inputs.FUSION_SET_ID }} -cp ${{ inputs.CERTIFICATE_PASSWORD }} -kp ${{ inputs.KEYSTORE_PASSWORD }} -ka ${{ inputs.KEYSTORE_ALIAS }} -kkp ${{ inputs.KEYSTORE_KEY_PASSWORD }} -team_id ${{ inputs.TEAM-ID }} -google-play-signing ${{ inputs.GOOGLE-PLAY-SIGNING }} -signing_fingerprint ${{ inputs.SIGN_FINGERPRINT }} -bl ${{ inputs.BUILD_WITH_LOGS }} --sign_second_output ${{inputs.SECOND_OUTPUT}} -bt ${{inputs.BUILD_TO_TEST}} -o ${{inputs.OUTPUT_APP_NAME}}
+      run: python3 ./actions/actions/appdome_build_sign.py -sign ${{ inputs.SIGN_OPTIONS }} -api_key ${{ inputs.APPDOME_API_TOKEN }} -fs ${{ inputs.FUSION_SET_ID }} -cp ${{ inputs.CERTIFICATE_PASSWORD }} -kp ${{ inputs.KEYSTORE_PASSWORD }} -ka ${{ inputs.KEYSTORE_ALIAS }} -kkp ${{ inputs.KEYSTORE_KEY_PASSWORD }} -team_id ${{ steps.convention-fix.outputs.TEAM_ID }} -google-play-signing ${{ steps.convention-fix.outputs.GOOGLE_PLAY_SIGNING }} -signing_fingerprint ${{ inputs.SIGN_FINGERPRINT }} -bl ${{ inputs.BUILD_WITH_LOGS }} --sign_second_output ${{inputs.SECOND_OUTPUT}} -bt ${{inputs.BUILD_TO_TEST}} -o ${{inputs.OUTPUT_APP_NAME}}
       shell: bash
     - name: Determine OUTPUT_APP_NAME directory
       id: get-output-dir
