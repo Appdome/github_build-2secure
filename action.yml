@@ -140,7 +140,7 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/github_build-2secure
-        ref: refs/heads/main
+        ref: refs/tags/1.3.5
         path: actions
     - name: permissions
       run: chmod +x ./actions/actions/appdome_build_sign.py | chmod +x ./actions/actions/files_manager.py
