@@ -109,11 +109,24 @@ runs:
     - name: Convention fix
       id: convention-fix
       run: |
-        echo "TEAM_ID=${{ coalesce(inputs.TEAM_ID, inputs.TEAM-ID) }}" >> $GITHUB_OUTPUT
-        echo "GOOGLE_PLAY_SIGNING=${{ coalesce(inputs.GOOGLE_PLAY_SIGNING, inputs.GOOGLE-PLAY-SIGNING) }}" >> $GITHUB_OUTPUT
+        if [ -n "${{ inputs.GOOGLE_PLAY_SIGNING }}" ]; then
+          GOOGLE_PLAY_SIGNING="${{ inputs.GOOGLE_PLAY_SIGNING }}"
+        else
+          GOOGLE_PLAY_SIGNING="${{ inputs.GOOGLE-PLAY-SIGNING }}"
+        fi
+
+        if [ "${{ inputs.TEAM_ID }}" == "None" ]; then
+          TEAM_ID="${{ inputs.TEAM-ID }}"
+        else
+          TEAM_ID="${{ inputs.TEAM_ID }}"
+        fi
+
+        echo "TEAM_ID=${TEAM_ID}" >> $GITHUB_OUTPUT
+        echo "GOOGLE_PLAY_SIGNING=${GOOGLE_PLAY_SIGNING}" >> $GITHUB_OUTPUT
         echo "TEAM_ID: $TEAM_ID"
         echo "GOOGLE_PLAY_SIGNING: $GOOGLE_PLAY_SIGNING"
       shell: bash
+
     - name: Cloning appdome-api-python github repository
       uses: actions/checkout@master
       with:
