@@ -170,7 +170,7 @@ runs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: workflow-artifacts
+        name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
         path: ${{ steps.get-output-dir.outputs.OUTPUT_DIR }}
     - name: List files in output directory
       run: ls -al "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}"

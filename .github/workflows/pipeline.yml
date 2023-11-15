@@ -1,0 +1,918 @@
+name: Appdome Build-2secure - Latest Flow
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  Presign_URLs:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: install boto3
+        run: |
+          python -m pip install --upgrade pip
+          pip install boto3
+        shell: bash
+
+      - name: Generate and Publish Presigned URLs
+        run: python pipeline/aws_signer.py
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Upload Presigned URLs Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned_urls
+
+  APK_SIGN_ON_APPDOME:
+    needs: Presign_URLs
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read APK App and Keystore URLs
+        run: |
+          apk_app_url=$(cat presigned-urls/apk_app.txt)
+          keystore_file_url=$(cat presigned-urls/keystore_file.txt)
+          echo "APK_APP=$apk_app_url" >> $GITHUB_OUTPUT
+          echo "KEYSTORE_FILE=$keystore_file_url" >> $GITHUB_OUTPUT
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            google_play_signing=true
+          else
+            google_play_signing=false
+          fi
+          build_to_test_options=("bitbar" "browserstack" "lambdatest" "saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+  
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+          echo "GOOGLE-PLAY-SIGNING=${google_play_signing}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "SIGN_ON_APPDOME", "APP_FILE": "${{ steps.urls.outputs.APK_APP }}", "KEYSTORE_FILE": "${{ steps.urls.outputs.KEYSTORE_FILE }}", "KEYSTORE_PASSWORD": "${{secrets.APPDOME_KEYSTORE_PASSWORD}}", "KEYSTORE_ALIAS": "${{secrets.APPDOME_KEYSTORE_ALIAS}}", "KEYSTORE_KEY_PASSWORD": "${{secrets.APPDOME_KEYSTORE_KEY_PASSWORD}}", "FUSION_SET_ID": "${{secrets.APPDOME_ANDROID_FUSION_SET_ID}}", "SIGN_FINGERPRINT": "${{secrets.APPDOME_SIGN_FINGERPRINT}}", "GOOGLE-PLAY-SIGNING": "${{ steps.random-options.outputs.GOOGLE-PLAY-SIGNING }}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_1
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_1" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_1
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
+
+
+  APK_PRIVATE_SIGNING:
+    needs: APK_SIGN_ON_APPDOME
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read APK App and Keystore URLs
+        run: |
+          apk_app_url=$(cat presigned-urls/apk_app.txt)
+          echo "APK_APP=$apk_app_url" >> $GITHUB_OUTPUT
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            google_play_signing=true
+          else
+            google_play_signing=false
+          fi
+          build_to_test_options=("bitbar" "browserstack" "lambdatest" "saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+          echo "GOOGLE-PLAY-SIGNING=${google_play_signing}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "PRIVATE_SIGNING", "APP_FILE": "${{ steps.urls.outputs.APK_APP }}", "FUSION_SET_ID": "${{secrets.APPDOME_ANDROID_FUSION_SET_ID}}", "SIGN_FINGERPRINT": "${{secrets.APPDOME_SIGN_FINGERPRINT}}", "GOOGLE-PLAY-SIGNING": "${{ steps.random-options.outputs.GOOGLE-PLAY-SIGNING }}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_2
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_2" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_2
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
+
+  APK_AUTO_DEV_SIGNING:
+    needs: APK_PRIVATE_SIGNING
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read APK App and Keystore URLs
+        run: |
+          apk_app_url=$(cat presigned-urls/apk_app.txt)
+          echo "APK_APP=$apk_app_url" >> $GITHUB_OUTPUT
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            google_play_signing=true
+          else
+            google_play_signing=false
+          fi
+          build_to_test_options=("bitbar" "browserstack" "lambdatest" "saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+          echo "GOOGLE-PLAY-SIGNING=${google_play_signing}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "AUTO_DEV_SIGNING", "APP_FILE": "${{ steps.urls.outputs.APK_APP }}", "FUSION_SET_ID": "${{secrets.APPDOME_ANDROID_FUSION_SET_ID}}", "SIGN_FINGERPRINT": "${{secrets.APPDOME_SIGN_FINGERPRINT}}", "GOOGLE-PLAY-SIGNING": "${{ steps.random-options.outputs.GOOGLE-PLAY-SIGNING }}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_3
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_3" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_3
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
+
+  AAB_SIGN_ON_APPDOME:
+    needs: Presign_URLs
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read APK App and Keystore URLs
+        run: |
+          aab_app_url=$(cat presigned-urls/aab_app.txt)
+          keystore_file_url=$(cat presigned-urls/keystore_file.txt)
+          echo "AAB_APP=$aab_app_url" >> $GITHUB_OUTPUT
+          echo "KEYSTORE_FILE=$keystore_file_url" >> $GITHUB_OUTPUT
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            second_output=true
+          else
+            second_output=false
+          fi
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            google_play_signing=true
+          else
+            google_play_signing=false
+          fi
+          build_to_test_options=("bitbar" "browserstack" "lambdatest" "saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+
+          echo "SECOND_OUTPUT=${second_output}" >> $GITHUB_OUTPUT
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+          echo "GOOGLE-PLAY-SIGNING=${google_play_signing}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "SIGN_ON_APPDOME", "APP_FILE": "${{ steps.urls.outputs.AAB_APP }}", "KEYSTORE_FILE": "${{ steps.urls.outputs.KEYSTORE_FILE }}", "KEYSTORE_PASSWORD": "${{secrets.APPDOME_KEYSTORE_PASSWORD}}", "KEYSTORE_ALIAS": "${{secrets.APPDOME_KEYSTORE_ALIAS}}", "KEYSTORE_KEY_PASSWORD": "${{secrets.APPDOME_KEYSTORE_KEY_PASSWORD}}", "FUSION_SET_ID": "${{secrets.APPDOME_ANDROID_FUSION_SET_ID}}", "SIGN_FINGERPRINT": "${{secrets.APPDOME_SIGN_FINGERPRINT}}", "GOOGLE-PLAY-SIGNING": "${{ steps.random-options.outputs.GOOGLE-PLAY-SIGNING }}", "SECOND_OUTPUT": "${{ steps.random-options.outputs.SECOND_OUTPUT }}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+          # Check APPDOME_SECURED_APP_SECOND_OUTPUT if SECOND_OUTPUT is true
+          if [[ "${{ steps.random-options.outputs.SECOND_OUTPUT }}" == "true" ]]; then
+            if [ -n "${{ env.APPDOME_SECURED_APP_SECOND_OUTPUT }}" ]; then
+              echo "APPDOME_SECURED_APP_SECOND_OUTPUT exists and is not empty"
+            else
+              echo "Error: APPDOME_SECURED_APP_SECOND_OUTPUT is missing or empty"
+              exit 1
+            fi
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_4
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_4" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_4
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
+
+
+  AAB_PRIVATE_SIGNING:
+    needs: AAB_SIGN_ON_APPDOME
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read APK App and Keystore URLs
+        run: |
+          aab_app_url=$(cat presigned-urls/aab_app.txt)
+          echo "AAB_APP=$aab_app_url" >> $GITHUB_OUTPUT
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            second_output=true
+          else
+            second_output=false
+          fi
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            google_play_signing=true
+          else
+            google_play_signing=false
+          fi
+          build_to_test_options=("bitbar" "browserstack" "lambdatest" "saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+
+          echo "SECOND_OUTPUT=${second_output}" >> $GITHUB_OUTPUT
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+          echo "GOOGLE-PLAY-SIGNING=${google_play_signing}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "PRIVATE_SIGNING", "APP_FILE": "${{ steps.urls.outputs.AAB_APP }}", "FUSION_SET_ID": "${{secrets.APPDOME_ANDROID_FUSION_SET_ID}}", "SIGN_FINGERPRINT": "${{secrets.APPDOME_SIGN_FINGERPRINT}}", "GOOGLE-PLAY-SIGNING": "${{ steps.random-options.outputs.GOOGLE-PLAY-SIGNING }}", "SECOND_OUTPUT": "${{ steps.random-options.outputs.SECOND_OUTPUT }}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+          # Check APPDOME_SECURED_APP_SECOND_OUTPUT if SECOND_OUTPUT is true
+          if [[ "${{ steps.random-options.outputs.SECOND_OUTPUT }}" == "true" ]]; then
+            if [ -n "${{ env.APPDOME_SECURED_APP_SECOND_OUTPUT }}" ]; then
+              echo "APPDOME_SECURED_APP_SECOND_OUTPUT exists and is not empty"
+            else
+              echo "Error: APPDOME_SECURED_APP_SECOND_OUTPUT is missing or empty"
+              exit 1
+            fi
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_5
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_5" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_5
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
+
+  AAB_AUTO_DEV_SIGNING:
+    needs: AAB_PRIVATE_SIGNING
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read APK App and Keystore URLs
+        run: |
+          aab_app_url=$(cat presigned-urls/aab_app.txt)
+          echo "AAB_APP=$aab_app_url" >> $GITHUB_OUTPUT
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            google_play_signing=true
+          else
+            google_play_signing=false
+          fi
+          build_to_test_options=("bitbar" "browserstack" "lambdatest" "saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+          echo "GOOGLE-PLAY-SIGNING=${google_play_signing}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "AUTO_DEV_SIGNING", "APP_FILE": "${{ steps.urls.outputs.AAB_APP }}", "FUSION_SET_ID": "${{secrets.APPDOME_ANDROID_FUSION_SET_ID}}", "SIGN_FINGERPRINT": "${{secrets.APPDOME_SIGN_FINGERPRINT}}", "GOOGLE-PLAY-SIGNING": "${{ steps.random-options.outputs.GOOGLE-PLAY-SIGNING }}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_6
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_6" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_6
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
+  IPA1_SIGN_ON_APPDOME:
+    needs: Presign_URLs
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read download URLs
+        run: |
+          ipa_app_url=$(cat presigned-urls/ipa_app_1.txt)
+          echo "IPA_APP=$ipa_app_url" >> $GITHUB_OUTPUT
+          certificate_file_url=$(cat presigned-urls/certificate_file_1.txt)
+          echo "CERTIFICATE_FILE=$certificate_file_url" >> $GITHUB_OUTPUT
+          mobile_provisioning_file_url=$(cat presigned-urls/ipa_1_mobile_provisioning.txt)
+          echo "MOBILE_PROVISIONING_FILE=$mobile_provisioning_file_url" >> $GITHUB_OUTPUT
+          entitlements_file_url=$(cat presigned-urls/ipa_1_entitlements.txt)
+          echo "ENTITLEMENTS_FILE=$entitlements_file_url" >> $GITHUB_OUTPUT
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          build_to_test_options=("saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "SIGN_ON_APPDOME", "APP_FILE": "${{ steps.urls.outputs.IPA_APP }}", "CERTIFICATE_FILE": "${{ steps.urls.outputs.CERTIFICATE_FILE }}", "CERTIFICATE_PASSWORD": "${{secrets.APPDOME_CERTIFICATE_1_PASSWORD}}", "MOBILE_PROVISION_PROFILE_FILE": "${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE }}", "ENTITLEMENTS_FILE": "${{ steps.urls.outputs.ENTITLEMENTS_FILE }}", "FUSION_SET_ID": "${{secrets.APPDOME_IOS_FUSION_SET_ID}}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_7
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_7" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_7
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
+  IPA1_PRIVATE_SIGNING:
+    needs: IPA1_SIGN_ON_APPDOME
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read download URLs
+        run: |
+          ipa_app_url=$(cat presigned-urls/ipa_app_1.txt)
+          echo "IPA_APP=$ipa_app_url" >> $GITHUB_OUTPUT
+          mobile_provisioning_file_url=$(cat presigned-urls/ipa_1_mobile_provisioning.txt)
+          echo "MOBILE_PROVISIONING_FILE=$mobile_provisioning_file_url" >> $GITHUB_OUTPUT
+          entitlements_file_url=$(cat presigned-urls/ipa_1_entitlements.txt)
+          echo "ENTITLEMENTS_FILE=$entitlements_file_url" >> $GITHUB_OUTPUT
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          build_to_test_options=("saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "PRIVATE_SIGNING", "APP_FILE": "${{ steps.urls.outputs.IPA_APP }}", "MOBILE_PROVISION_PROFILE_FILE": "${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE }}", "ENTITLEMENTS_FILE": "${{ steps.urls.outputs.ENTITLEMENTS_FILE }}", "FUSION_SET_ID": "${{secrets.APPDOME_IOS_FUSION_SET_ID}}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_8
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_8" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_8
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
+  IPA1_AUTO_DEV_SIGNING:
+    needs: IPA1_PRIVATE_SIGNING
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read download URLs
+        run: |
+          ipa_app_url=$(cat presigned-urls/ipa_app_1.txt)
+          echo "IPA_APP=$ipa_app_url" >> $GITHUB_OUTPUT
+          mobile_provisioning_file_url=$(cat presigned-urls/ipa_1_mobile_provisioning.txt)
+          echo "MOBILE_PROVISIONING_FILE=$mobile_provisioning_file_url" >> $GITHUB_OUTPUT
+          entitlements_file_url=$(cat presigned-urls/ipa_1_entitlements.txt)
+          echo "ENTITLEMENTS_FILE=$entitlements_file_url" >> $GITHUB_OUTPUT
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          build_to_test_options=("saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "AUTO_DEV_SIGNING", "APP_FILE": "${{ steps.urls.outputs.IPA_APP }}", "MOBILE_PROVISION_PROFILE_FILE": "${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE }}", "ENTITLEMENTS_FILE": "${{ steps.urls.outputs.ENTITLEMENTS_FILE }}", "FUSION_SET_ID": "${{secrets.APPDOME_IOS_FUSION_SET_ID}}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_9
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_9" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_9
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
+
+  IPA2_SIGN_ON_APPDOME:
+    needs: Presign_URLs
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read download URLs
+        run: |
+          ipa_app_url=$(cat presigned-urls/ipa_app_2.txt)
+          echo "IPA_APP=$ipa_app_url" >> $GITHUB_OUTPUT
+          certificate_file_url=$(cat presigned-urls/certificate_file_2.txt)
+          echo "CERTIFICATE_FILE=$certificate_file_url" >> $GITHUB_OUTPUT
+          for i in {1..3}; do
+            mobile_provisioning_file_url=$(cat presigned-urls/ipa_2_mobile_provisioning_$i.txt)
+            echo "MOBILE_PROVISIONING_FILE_$i=$mobile_provisioning_file_url" >> $GITHUB_OUTPUT
+            entitlements_file_url=$(cat presigned-urls/ipa_2_entitlements_$i.txt)
+            echo "ENTITLEMENTS_FILE_$i=$entitlements_file_url" >> $GITHUB_OUTPUT
+          done
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          build_to_test_options=("saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "SIGN_ON_APPDOME", "APP_FILE": "${{ steps.urls.outputs.IPA_APP }}", "CERTIFICATE_FILE": "${{ steps.urls.outputs.CERTIFICATE_FILE }}", "CERTIFICATE_PASSWORD": "${{secrets.APPDOME_CERTIFICATE_2_PASSWORD}}", "MOBILE_PROVISION_PROFILE_FILE": "${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE_1 }},${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE_2 }},${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE_3 }}", "ENTITLEMENTS_FILE": "${{ steps.urls.outputs.ENTITLEMENTS_FILE_1 }},${{ steps.urls.outputs.ENTITLEMENTS_FILE_2 }},${{ steps.urls.outputs.ENTITLEMENTS_FILE_3 }}", "FUSION_SET_ID": "${{secrets.APPDOME_IOS_FUSION_SET_ID}}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_10
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_10" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_10
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
+
+  IPA2_PRIVATE_SIGNING:
+    needs: IPA2_SIGN_ON_APPDOME
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read download URLs
+        run: |
+          ipa_app_url=$(cat presigned-urls/ipa_app_2.txt)
+          echo "IPA_APP=$ipa_app_url" >> $GITHUB_OUTPUT
+          for i in {1..3}; do
+            mobile_provisioning_file_url=$(cat presigned-urls/ipa_2_mobile_provisioning_$i.txt)
+            echo "MOBILE_PROVISIONING_FILE_$i=$mobile_provisioning_file_url" >> $GITHUB_OUTPUT
+            entitlements_file_url=$(cat presigned-urls/ipa_2_entitlements_$i.txt)
+            echo "ENTITLEMENTS_FILE_$i=$entitlements_file_url" >> $GITHUB_OUTPUT
+          done
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          build_to_test_options=("saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "PRIVATE_SIGNING", "APP_FILE": "${{ steps.urls.outputs.IPA_APP }}", "MOBILE_PROVISION_PROFILE_FILE": "${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE_1 }},${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE_2 }},${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE_3 }}", "ENTITLEMENTS_FILE": "${{ steps.urls.outputs.ENTITLEMENTS_FILE_1 }},${{ steps.urls.outputs.ENTITLEMENTS_FILE_2 }},${{ steps.urls.outputs.ENTITLEMENTS_FILE_3 }}", "FUSION_SET_ID": "${{secrets.APPDOME_IOS_FUSION_SET_ID}}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_11
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_11" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_11
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
+
+  IPA2_AUTO_DEV_SIGNING:
+    needs: IPA2_PRIVATE_SIGNING
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download Presigned URLs Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: presigned-urls
+          path: presigned-urls
+      - name: Read download URLs
+        run: |
+          ipa_app_url=$(cat presigned-urls/ipa_app_2.txt)
+          echo "IPA_APP=$ipa_app_url" >> $GITHUB_OUTPUT
+          for i in {1..3}; do
+            mobile_provisioning_file_url=$(cat presigned-urls/ipa_2_mobile_provisioning_$i.txt)
+            echo "MOBILE_PROVISIONING_FILE_$i=$mobile_provisioning_file_url" >> $GITHUB_OUTPUT
+            entitlements_file_url=$(cat presigned-urls/ipa_2_entitlements_$i.txt)
+            echo "ENTITLEMENTS_FILE_$i=$entitlements_file_url" >> $GITHUB_OUTPUT
+          done
+        id: urls
+      - name: Set random options
+        id: random-options
+        run: |
+          if [[ $((RANDOM % 2)) == 1 ]]; then
+            build_with_logs=true
+          else
+            build_with_logs=false
+          fi
+          build_to_test_options=("saucelabs" "None")
+          build_to_test_index=$((RANDOM % ${#build_to_test_options[@]}))
+          output_name_options=("None" "test_app" "test_dir/test_app" "test_dir/test_app.aab" "test_app.apk")
+          output_name_index=$((RANDOM % ${#build_to_test_options[@]}))
+
+          echo "BUILD_WITH_LOGS=${build_with_logs}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_APP_NAME=${output_name_options[$output_name_index]}" >> $GITHUB_OUTPUT
+          echo "BUILD_TO_TEST=${build_to_test_options[$build_to_test_index]}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Run the Appdome plugin
+        uses: jenseng/dynamic-uses@v1
+        with:
+          uses: Appdome/github_build-2secure@${{ github.event.pull_request.title }}
+          with: '{ "APPDOME_API_TOKEN": "${{secrets.APPDOME_API_KEY}}", "TEAM-ID": "${{secrets.APPDOME_TEAM_ID}}", "SIGN_OPTIONS": "AUTO_DEV_SIGNING", "APP_FILE": "${{ steps.urls.outputs.IPA_APP }}", "MOBILE_PROVISION_PROFILE_FILE": "${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE_1 }},${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE_2 }},${{ steps.urls.outputs.MOBILE_PROVISIONING_FILE_3 }}", "ENTITLEMENTS_FILE": "${{ steps.urls.outputs.ENTITLEMENTS_FILE_1 }},${{ steps.urls.outputs.ENTITLEMENTS_FILE_2 }},${{ steps.urls.outputs.ENTITLEMENTS_FILE_3 }}", "FUSION_SET_ID": "${{secrets.APPDOME_IOS_FUSION_SET_ID}}", "BUILD_WITH_LOGS": "${{ steps.random-options.outputs.BUILD_WITH_LOGS }}", "OUTPUT_APP_NAME": "${{ steps.random-options.outputs.OUTPUT_APP_NAME }}", "BUILD_TO_TEST": "${{ steps.random-options.outputs.BUILD_TO_TEST }}" }'
+
+      - name: Test Environment Variables
+        run: |
+          # Check if APPDOME_SECURED_APP exists and is not empty
+          if [ -n "${{ env.APPDOME_SECURED_APP }}" ]; then
+            echo "APPDOME_SECURED_APP exists and is not empty"
+          else
+            echo "Error: APPDOME_SECURED_APP is missing or empty"
+            exit 1
+          fi
+
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+          path: ${{ github.workspace }}/downloaded_artifact_12
+      - name: Check Artifact
+        run: |
+          if [ -d "${{ github.workspace }}/downloaded_artifact_12" ]; then
+            echo "Artifact exists"
+            ls ${{ github.workspace }}/downloaded_artifact_12
+          else
+            echo "Error: Artifact not found"
+            exit 1
+          fi
