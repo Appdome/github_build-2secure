@@ -128,7 +128,7 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/appdome-api-python
-        ref: refs/tags/1.1.0
+        ref: refs/heads/main
         path: appdome
     - name: Install requirements
       run: sudo pip3 install -r appdome/requirements.txt
@@ -137,7 +137,7 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/github_build-2secure
-        ref: refs/tags/1.4.0.freeze
+        ref: refs/tags/1.4.1
         path: actions
     - name: permissions
       run: chmod +x ./actions/actions/appdome_build_sign.py | chmod +x ./actions/actions/files_manager.py
