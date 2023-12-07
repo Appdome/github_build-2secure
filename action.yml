@@ -109,7 +109,7 @@ runs:
     - name: Convention fix
       id: convention-fix
       run: |
-        if [ -n "${{ inputs.GOOGLE_PLAY_SIGNING }}" ]; then
+        if [ "${{ inputs.GOOGLE_PLAY_SIGNING }}" != "false" ]; then
           GOOGLE_PLAY_SIGNING="${{ inputs.GOOGLE_PLAY_SIGNING }}"
         else
           GOOGLE_PLAY_SIGNING="${{ inputs.GOOGLE-PLAY-SIGNING }}"
@@ -128,7 +128,7 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/appdome-api-python
-        ref: refs/heads/main
+        ref: refs/tags/1.1.0
         path: appdome
     - name: Install requirements
       run: sudo pip3 install -r appdome/requirements.txt
@@ -137,7 +137,7 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/github_build-2secure
-        ref: refs/heads/main
+        ref: refs/tags/1.4.1.freeze
         path: actions
     - name: permissions
       run: chmod +x ./actions/actions/appdome_build_sign.py | chmod +x ./actions/actions/files_manager.py
