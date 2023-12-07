@@ -109,7 +109,7 @@ runs:
     - name: Convention fix
       id: convention-fix
       run: |
-        if [ -n "${{ inputs.GOOGLE_PLAY_SIGNING }}"  != "false" ]; then
+        if [ "${{ inputs.GOOGLE_PLAY_SIGNING }}" != "false" ]; then
           GOOGLE_PLAY_SIGNING="${{ inputs.GOOGLE_PLAY_SIGNING }}"
         else
           GOOGLE_PLAY_SIGNING="${{ inputs.GOOGLE-PLAY-SIGNING }}"
