@@ -109,6 +109,8 @@ runs:
     - name: Convention fix
       id: convention-fix
       run: |
+        echo GOOGLE_PLAY_SIGNING: ${{ inputs.GOOGLE_PLAY_SIGNING }}
+        echo GOOGLE-PLAY-SIGNING: ${{ inputs.GOOGLE-PLAY-SIGNING }}
         if [ -n "${{ inputs.GOOGLE_PLAY_SIGNING }}" ]; then
           GOOGLE_PLAY_SIGNING="${{ inputs.GOOGLE_PLAY_SIGNING }}"
         else
