@@ -7,6 +7,7 @@ import subprocess
 DEFAULT_OUTPUT_PATH = './output'
 DEFAULT_OUTPUT_NAME = "Appdome_secured_app"
 
+
 def parse_args():
     """
     Command line arguments
@@ -41,18 +42,22 @@ def parse_args():
                         help="SAUCELABS OR BITBAR OR LAMBDATEST OR BROWSERSTACK")
     parser.add_argument("-o", dest='output_name', required=False,
                         help="Output app name")
+    parser.add_argument("-faid", dest='firebase_app_id', required=False, default="None",
+                        help="App ID in Firebase project (required for Crashlytics)")
     return parser.parse_args()
+
 
 sys.path.extend([os.path.join(sys.path[0], '../..')])
 
 new_env = os.environ.copy()
 
 new_env["APPDOME_CLIENT_HEADER"] = "Github/1.0.0"
-
+new_env["APPDOME_SERVER_BASE_URL"] = "https://qamaster.dev.appdome.com/"
 args = parse_args()
 
 
-def validate_args(platform, arguments, keystore_file, provision_profiles, entitlements, keystore_pass):
+def validate_args(platform, arguments, keystore_file, provision_profiles, entitlements, keystore_pass,
+                  google_application_credentials):
     print("entered validate")
     error = False
     if arguments.sign_option is None or arguments.sign_option == "None":
@@ -80,6 +85,9 @@ def validate_args(platform, arguments, keystore_file, provision_profiles, entitl
                 print("No entitlements file specified")
                 error = True
     else:
+        if arguments.firebase_app_id != "None" and google_application_credentials == "":
+            print("No google application credentials specified")
+            error = True
         if arguments.sign_option == "SIGN_ON_APPDOME":
             if len(keystore_file) == 0:
                 print("No keystore file specified")
@@ -108,6 +116,7 @@ def main():
     fusion_set = args.fusion_set
     keystore_pass = args.keystore_pass
     certificate_pass = args.certificate_pass
+    firebase_app_id = f"-faid {args.firebase_app_id}" if args.firebase_app_id != "None" else ""
     output_file_name = args.output_name if args.output_name != "None" else DEFAULT_OUTPUT_NAME
     output_path = os.path.dirname(output_file_name) if os.path.dirname(output_file_name) != "" else DEFAULT_OUTPUT_PATH
     os.makedirs(output_path, exist_ok=True)
@@ -129,7 +138,14 @@ def main():
     entitlements = f"--entitlements {' '.join(glob.glob('./files/entitlements/*'))}" \
         if os.path.exists("./files/entitlements") else ""
 
-    validate_args(platform, args, keystore_file, provision_profiles, entitlements, keystore_pass)
+    google_application_credentials = glob.glob('./files/crashlitics_credentials.json') if os.path.exists(
+        "./files/crashlitics_credentials.json") else ""
+    if google_application_credentials != "":
+        new_env["GOOGLE_APPLICATION_CREDENTIALS"] = google_application_credentials[0]
+
+    validate_args(platform=platform, arguments=args, keystore_file=keystore_file, provision_profiles=provision_profiles,
+                  entitlements=entitlements, keystore_pass=keystore_pass,
+                  google_application_credentials=google_application_credentials)
 
     build_with_logs = " -bl" if args.build_with_logs != "false" else ""
     sign_second_output = f" --sign_second_output {output_path}/{output_file_name}_second_output.apk" if \
@@ -149,32 +165,33 @@ def main():
               f"--keystore_pass {keystore_pass} --output {output_path}/{output_file_name}{app_ext} " \
               f"--certificate_output {output_path}/certificate.pdf {keystore_alias} {keystore_key_pass} " \
               f"{provision_profiles} {entitlements}{build_with_logs}{sign_second_output}{build_to_test}  " \
-              f"--deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {google_play_signing} {signing_fingerprint}"
+              f"--deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {google_play_signing} " \
+              f"{signing_fingerprint} {firebase_app_id}"
 
-        subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
+        subprocess.run(cmd.split(), env=new_env, check=True, text=True)
 
     elif sign_option == 'PRIVATE_SIGNING':
         google_play_signing = f"--google_play_signing" if args.google_play_signing != "false" else ""
         signing_fingerprint = f"--signing_fingerprint {args.signing_fingerprint}" if args.signing_fingerprint != "None" else ""
 
-        cmd = f"appdome_virtual_env/bin/python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
+        cmd = f"python3 ../../appdome-api-python/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --private_signing -fs {fusion_set} {team_id} " \
               f"--output {output_path}/{output_file_name}{app_ext} --certificate_output {output_path}/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles}{build_with_logs}{sign_second_output}" \
-              f"{build_to_test} --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip"
+              f"{build_to_test} --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {firebase_app_id}"
 
-        subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
+        subprocess.run(cmd.split(), env=new_env, check=True, text=True)
 
     elif sign_option == 'AUTO_DEV_SIGNING':
         google_play_signing = f"--google_play_signing" if args.google_play_signing != "false" else ""
         signing_fingerprint = f"--signing_fingerprint {args.signing_fingerprint}" if args.signing_fingerprint != "None" else ""
-
         cmd = f"appdome_virtual_env/bin/python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --auto_dev_private_signing -fs {fusion_set} {team_id} " \
               f"--output {output_path}/{output_file_name}.sh --certificate_output {output_path}/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles} {entitlements}{build_with_logs}" \
-              f"{build_to_test}  --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip"
-        subprocess.check_output([i for i in cmd.split(" ") if i != ''], env=new_env)
+              f"{build_to_test}  --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {firebase_app_id}"
+
+        subprocess.run(cmd.split(), env=new_env, check=True, text=True)
     else:
         print("Signing option not found!\nValid signs: AUTO_SIGNING/PRIVATE_SIGNING/AUTO_DEV_SIGNING")
 

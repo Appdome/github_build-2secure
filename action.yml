@@ -103,6 +103,14 @@ inputs:
       - saucelabs
     required: false
     default: "None"
+  FIREBASE_APP_ID:
+    description: 'App ID in Firebase project (required for Crashlytics)'
+    default: "None"
+    required: false
+  GOOGLE_APPLICATION_CREDENTIALS:
+    description: 'google application credentials for crashlitics'
+    default: "None"
+    required: false
 runs:
   using: "composite"
   steps:
@@ -140,6 +148,10 @@ runs:
       run: |
         chmod +x ./actions/setup_venv.sh
         ./actions/setup_venv.sh
+      shell: bash
+    - name: Installing firebase tools
+      run: |
+        curl -sL firebase.tools | bash
       shell: bash
     - name: permissions
       run: chmod +x ./actions/actions/appdome_build_sign.py | chmod +x ./actions/actions/files_manager.py
