@@ -8,6 +8,8 @@ def main():
     aws_default_region = 'eu-central-1'
     bucket_name = "appdome-automation-vanilla-apps"
     objects = {
+        'crashlitics_credentials': 'Thomas/PipelineFiles/crashlitics_credentials.json',
+        'crashlitics_test_app': 'Thomas/PipelineFiles/crashlitics_test.aab',
         'aab_app': 'Thomas/PipelineFiles/Apps/FileFinder.aab',
         'apk_app': 'Thomas/PipelineFiles/Apps/TimeCard.apk',
         'keystore_file': 'Thomas/PipelineFiles/appdome.keystore',
