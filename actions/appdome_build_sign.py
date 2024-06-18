@@ -174,7 +174,13 @@ def main():
         google_play_signing = f"--google_play_signing" if args.google_play_signing != "false" else ""
         signing_fingerprint = f"--signing_fingerprint {args.signing_fingerprint}" if args.signing_fingerprint != "None" else ""
 
-        cmd = f"python3 ../../appdome-api-python/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
+        # cmd = f"python3 ../../appdome-api-python/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
+        #       f"--app {app_file} --private_signing -fs {fusion_set} {team_id} " \
+        #       f"--output {output_path}/{output_file_name}{app_ext} --certificate_output {output_path}/certificate.pdf " \
+        #       f"{google_play_signing} {signing_fingerprint} {provision_profiles}{build_with_logs}{sign_second_output}" \
+        #       f"{build_to_test} --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {firebase_app_id}"
+
+        cmd = f"appdome_virtual_env/bin/python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --private_signing -fs {fusion_set} {team_id} " \
               f"--output {output_path}/{output_file_name}{app_ext} --certificate_output {output_path}/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles}{build_with_logs}{sign_second_output}" \
