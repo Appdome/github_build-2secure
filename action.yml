@@ -141,13 +141,13 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/appdome-api-python
-        ref: refs/heads/main
+        ref: refs/tags/1.2.0
         path: appdome
     - name: Cloning actions
       uses: actions/checkout@master
       with:
         repository: Appdome/github_build-2secure
-        ref: refs/heads/main
+        ref: refs/tags/1.6.0.freeze
         path: actions
     - name: Setup Virtual Environment
       run: |
