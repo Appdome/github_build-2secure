@@ -3,6 +3,7 @@ import glob
 import sys
 import os
 import subprocess
+
 DEFAULT_OUTPUT_PATH = './output'
 DEFAULT_OUTPUT_NAME = "Appdome_secured_app"
 
@@ -54,8 +55,7 @@ new_env["APPDOME_CLIENT_HEADER"] = "Github/1.0.0"
 args = parse_args()
 
 
-def validate_args(platform, arguments, keystore_file, provision_profiles, entitlements, keystore_pass,
-                  google_application_credentials):
+def validate_args(platform, arguments, keystore_file, provision_profiles, entitlements, keystore_pass):
     print("entered validate")
     error = False
     if arguments.sign_option is None or arguments.sign_option == "None":
@@ -83,9 +83,6 @@ def validate_args(platform, arguments, keystore_file, provision_profiles, entitl
                 print("No entitlements file specified")
                 error = True
     else:
-        if arguments.firebase_app_id != "None" and google_application_credentials == "":
-            print("No google application credentials specified")
-            error = True
         if arguments.sign_option == "SIGN_ON_APPDOME":
             if len(keystore_file) == 0:
                 print("No keystore file specified")
@@ -136,14 +133,8 @@ def main():
     entitlements = f"--entitlements {' '.join(glob.glob('./files/entitlements/*'))}" \
         if os.path.exists("./files/entitlements") else ""
 
-    google_application_credentials = glob.glob('./files/crashlitics_credentials.json') if os.path.exists(
-        "./files/crashlitics_credentials.json") else ""
-    if google_application_credentials != "":
-        new_env["GOOGLE_APPLICATION_CREDENTIALS"] = google_application_credentials[0]
-
     validate_args(platform=platform, arguments=args, keystore_file=keystore_file, provision_profiles=provision_profiles,
-                  entitlements=entitlements, keystore_pass=keystore_pass,
-                  google_application_credentials=google_application_credentials)
+                  entitlements=entitlements, keystore_pass=keystore_pass)
 
     build_with_logs = " -bl" if args.build_with_logs != "false" else ""
     sign_second_output = f" --sign_second_output {output_path}/{output_file_name}_second_output.apk" if \
