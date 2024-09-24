@@ -18,8 +18,6 @@ def parse_args():
                         help="provision_profiles", default=None)
     parser.add_argument("-e", dest='entitlements', required=False,
                         help="entitlements", default=None)
-    parser.add_argument("-gac", dest='google_application_credentials', required=False,
-                        help="google_application_credentials for crashlitics", default=None)
     return parser.parse_args()
 
 
@@ -70,7 +68,6 @@ def main():
     certificate = args.certificate
     provision_profiles = args.provision_profiles
     entitlements = args.entitlements
-    google_application_credentials = args.google_application_credentials
     ext = None
     ios_flag = None
     if '.ipa' in app_file:
@@ -144,17 +141,6 @@ def main():
                 copy_files(path.strip(), f"./files/entitlements/{index}.plist")
         else:
             print(f"Error couldn't compose {entitlements}")
-            exit(1)
-
-    if google_application_credentials and google_application_credentials != "None":
-        if google_application_credentials.startswith('htt'):
-            download_file(google_application_credentials, f"./files/crashlitics_credentials.json")
-        elif os.path.exists(google_application_credentials):
-            copy_files(google_application_credentials, f"./files/crashlitics_credentials.json")
-        elif is_base64(google_application_credentials):
-            decode_base64(google_application_credentials, f"./files/crashlitics_credentials.json")
-        else:
-            print(f"Error couldn't compose {google_application_credentials}")
             exit(1)
 
 
