@@ -34,6 +34,8 @@ def parse_args():
                         help="google play signing", default="false")
     parser.add_argument("-signing_fingerprint", dest='signing_fingerprint', required=False,
                         help="signing_fingerprint", default="None")
+    parser.add_argument("-signing_fingerprint_upgrade", dest='signing_fingerprint_upgrade', required=False,
+                        help="signing_fingerprint_upgrade", default="None")
     parser.add_argument("-bl", dest='build_with_logs', required=False,
                         help="Do you want to build with logs?")
     parser.add_argument("--sign_second_output", dest='sign_second_output', required=False,
@@ -148,6 +150,7 @@ def main():
         keystore_key_pass = f"--key_pass {args.keystore_key_pass}" if args.keystore_key_pass != "None" else ""
         google_play_signing = f"--google_play_signing" if args.google_play_signing != "false" else ""
         signing_fingerprint = f"--signing_fingerprint {args.signing_fingerprint}" if args.signing_fingerprint != "None" else ""
+        signing_fingerprint_upgrade = f"--signing_fingerprint {args.signing_fingerprint_upgrade}" if args.signing_fingerprint_upgrade != "None" else ""
 
         cmd = f"appdome_virtual_env/bin/python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} --app {app_file} " \
               f"--sign_on_appdome -fs {fusion_set} {team_id} --keystore {keystore_file[0]} " \
@@ -155,30 +158,35 @@ def main():
               f"--certificate_output {output_path}/certificate.pdf {keystore_alias} {keystore_key_pass} " \
               f"{provision_profiles} {entitlements}{build_with_logs}{sign_second_output}{build_to_test}  " \
               f"--deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {google_play_signing} " \
-              f"{signing_fingerprint} {firebase_app_id}"
+              f"{signing_fingerprint} {firebase_app_id} {signing_fingerprint_upgrade}"
 
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
 
     elif sign_option == 'PRIVATE_SIGNING':
         google_play_signing = f"--google_play_signing" if args.google_play_signing != "false" else ""
         signing_fingerprint = f"--signing_fingerprint {args.signing_fingerprint}" if args.signing_fingerprint != "None" else ""
+        signing_fingerprint_upgrade = f"--signing_fingerprint {args.signing_fingerprint_upgrade}" if args.signing_fingerprint_upgrade != "None" else ""
 
         cmd = f"appdome_virtual_env/bin/python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --private_signing -fs {fusion_set} {team_id} " \
               f"--output {output_path}/{output_file_name}{app_ext} --certificate_output {output_path}/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles}{build_with_logs}{sign_second_output}" \
-              f"{build_to_test} --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {firebase_app_id}"
+              f"{build_to_test} --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {firebase_app_id}" \
+              f"{signing_fingerprint_upgrade}"
 
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
 
     elif sign_option == 'AUTO_DEV_SIGNING':
         google_play_signing = f"--google_play_signing" if args.google_play_signing != "false" else ""
         signing_fingerprint = f"--signing_fingerprint {args.signing_fingerprint}" if args.signing_fingerprint != "None" else ""
+        signing_fingerprint_upgrade = f"--signing_fingerprint {args.signing_fingerprint_upgrade}" if args.signing_fingerprint_upgrade != "None" else ""
+
         cmd = f"appdome_virtual_env/bin/python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --auto_dev_private_signing -fs {fusion_set} {team_id} " \
               f"--output {output_path}/{output_file_name}.sh --certificate_output {output_path}/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles} {entitlements}{build_with_logs}" \
-              f"{build_to_test}  --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {firebase_app_id}"
+              f"{build_to_test}  --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {firebase_app_id}" \
+              f"{signing_fingerprint_upgrade}"
 
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
     else:
