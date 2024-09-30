@@ -150,7 +150,7 @@ def main():
         keystore_key_pass = f"--key_pass {args.keystore_key_pass}" if args.keystore_key_pass != "None" else ""
         google_play_signing = f"--google_play_signing" if args.google_play_signing != "false" else ""
         signing_fingerprint = f"--signing_fingerprint {args.signing_fingerprint}" if args.signing_fingerprint != "None" else ""
-        signing_fingerprint_upgrade = f"--signing_fingerprint {args.signing_fingerprint_upgrade}" if args.signing_fingerprint_upgrade != "None" else ""
+        signing_fingerprint_upgrade = f"--signing_fingerprint_upgrade {args.signing_fingerprint_upgrade}" if args.signing_fingerprint_upgrade != "None" else ""
 
         cmd = f"appdome_virtual_env/bin/python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} --app {app_file} " \
               f"--sign_on_appdome -fs {fusion_set} {team_id} --keystore {keystore_file[0]} " \
@@ -165,7 +165,7 @@ def main():
     elif sign_option == 'PRIVATE_SIGNING':
         google_play_signing = f"--google_play_signing" if args.google_play_signing != "false" else ""
         signing_fingerprint = f"--signing_fingerprint {args.signing_fingerprint}" if args.signing_fingerprint != "None" else ""
-        signing_fingerprint_upgrade = f"--signing_fingerprint {args.signing_fingerprint_upgrade}" if args.signing_fingerprint_upgrade != "None" else ""
+        signing_fingerprint_upgrade = f"--signing_fingerprint_upgrade {args.signing_fingerprint_upgrade}" if args.signing_fingerprint_upgrade != "None" else ""
 
         cmd = f"appdome_virtual_env/bin/python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --private_signing -fs {fusion_set} {team_id} " \
@@ -179,7 +179,7 @@ def main():
     elif sign_option == 'AUTO_DEV_SIGNING':
         google_play_signing = f"--google_play_signing" if args.google_play_signing != "false" else ""
         signing_fingerprint = f"--signing_fingerprint {args.signing_fingerprint}" if args.signing_fingerprint != "None" else ""
-        signing_fingerprint_upgrade = f"--signing_fingerprint {args.signing_fingerprint_upgrade}" if args.signing_fingerprint_upgrade != "None" else ""
+        signing_fingerprint_upgrade = f"--signing_fingerprint_upgrade {args.signing_fingerprint_upgrade}" if args.signing_fingerprint_upgrade != "None" else ""
 
         cmd = f"appdome_virtual_env/bin/python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --auto_dev_private_signing -fs {fusion_set} {team_id} " \
