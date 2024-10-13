@@ -44,6 +44,8 @@ def parse_args():
                         help="Output app name")
     parser.add_argument("-faid", dest='firebase_app_id', required=False, default="None",
                         help="App ID in Firebase project (required for Crashlytics)")
+    parser.add_argument("-dd_api_key", dest='datadog_api_key', required=False, default="None",
+                        help="Data Dog API_KEY (required for DataDog Deobfuscation)")
     return parser.parse_args()
 
 
@@ -112,6 +114,7 @@ def main():
     keystore_pass = args.keystore_pass
     certificate_pass = args.certificate_pass
     firebase_app_id = f"-faid {args.firebase_app_id}" if args.firebase_app_id != "None" else ""
+    datadog_api_key = f"-dd_api_key {args.datadog_api_key}" if args.datadog_api_key != "None" else ""
     output_file_name = args.output_name if args.output_name != "None" else DEFAULT_OUTPUT_NAME
     output_path = os.path.dirname(output_file_name) if os.path.dirname(output_file_name) != "" else DEFAULT_OUTPUT_PATH
     os.makedirs(output_path, exist_ok=True)
@@ -153,9 +156,9 @@ def main():
               f"--sign_on_appdome -fs {fusion_set} {team_id} --keystore {keystore_file[0]} " \
               f"--keystore_pass {keystore_pass} --output {output_path}/{output_file_name}{app_ext} " \
               f"--certificate_output {output_path}/certificate.pdf {keystore_alias} {keystore_key_pass} " \
-              f"{provision_profiles} {entitlements}{build_with_logs}{sign_second_output}{build_to_test}  " \
+              f"{provision_profiles} {entitlements}{build_with_logs}{sign_second_output}{build_to_test} " \
               f"--deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {google_play_signing} " \
-              f"{signing_fingerprint} {firebase_app_id}"
+              f"{signing_fingerprint} {firebase_app_id} {datadog_api_key}"
 
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
 
@@ -166,19 +169,22 @@ def main():
         cmd = f"appdome_virtual_env/bin/python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --private_signing -fs {fusion_set} {team_id} " \
               f"--output {output_path}/{output_file_name}{app_ext} --certificate_output {output_path}/certificate.pdf " \
-              f"{google_play_signing} {signing_fingerprint} {provision_profiles}{build_with_logs}{sign_second_output}" \
-              f"{build_to_test} --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {firebase_app_id}"
+              f"{google_play_signing} {signing_fingerprint} {provision_profiles}{build_with_logs}{sign_second_output} " \
+              f"{build_to_test} --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip " \
+              f"{firebase_app_id} {datadog_api_key}"
 
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
 
     elif sign_option == 'AUTO_DEV_SIGNING':
         google_play_signing = f"--google_play_signing" if args.google_play_signing != "false" else ""
         signing_fingerprint = f"--signing_fingerprint {args.signing_fingerprint}" if args.signing_fingerprint != "None" else ""
+
         cmd = f"appdome_virtual_env/bin/python3 appdome/appdome-api-python/appdome_api.py -key {appdome_api_key} " \
               f"--app {app_file} --auto_dev_private_signing -fs {fusion_set} {team_id} " \
               f"--output {output_path}/{output_file_name}.sh --certificate_output {output_path}/certificate.pdf " \
-              f"{google_play_signing} {signing_fingerprint} {provision_profiles} {entitlements}{build_with_logs}" \
-              f"{build_to_test}  --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {firebase_app_id}"
+              f"{google_play_signing} {signing_fingerprint} {provision_profiles} {entitlements}{build_with_logs} " \
+              f"{build_to_test}  --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip " \
+              f"{firebase_app_id} {datadog_api_key}"
 
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
     else:
