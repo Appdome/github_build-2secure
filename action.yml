@@ -141,7 +141,7 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/appdome-api-python
-        ref: refs/MR/galc/NF-70028/uploading_mapping_file
+        ref: refs/heads/MR/galc/NF-70028/uploading_mapping_file
         path: appdome
     - name: Cloning actions
       uses: actions/checkout@master
