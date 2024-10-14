@@ -141,13 +141,13 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/appdome-api-python
-        ref: refs/heads/main
+        ref: refs/MR/galc/NF-70028/uploading_mapping_file
         path: appdome
     - name: Cloning actions
       uses: actions/checkout@master
       with:
         repository: Appdome/github_build-2secure
-        ref: refs/heads/main
+        ref: refs/heads/datadog_refactor
         path: actions
     - name: Setup Virtual Environment
       run: |
