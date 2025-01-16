@@ -30,7 +30,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Upload Presigned URLs Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: presigned-urls
           path: presigned_urls
@@ -42,7 +42,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -94,7 +94,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_1
@@ -116,7 +116,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -166,7 +166,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_2
@@ -187,7 +187,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -237,7 +237,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_3
@@ -258,7 +258,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -326,7 +326,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_4
@@ -348,7 +348,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -414,7 +414,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_5
@@ -435,7 +435,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -485,7 +485,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_6
@@ -505,7 +505,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -555,7 +555,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_7
@@ -575,7 +575,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -623,7 +623,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_8
@@ -643,7 +643,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -691,7 +691,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_9
@@ -712,7 +712,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -764,7 +764,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_10
@@ -785,7 +785,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -835,7 +835,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_11
@@ -856,7 +856,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Download Presigned URLs Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: presigned-urls
           path: presigned-urls
@@ -906,7 +906,7 @@ jobs:
           fi
 
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
           path: ${{ github.workspace }}/downloaded_artifact_12
