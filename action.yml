@@ -20,10 +20,10 @@ inputs:
   SIGN_OPTIONS:
     type: choice
     description: "iOS/Android Signin option"
-    options: 
-    - SIGN_ON_APPDOME
-    - PRIVATE_SIGNING
-    - AUTO_DEV_SIGNING
+    options:
+      - SIGN_ON_APPDOME
+      - PRIVATE_SIGNING
+      - AUTO_DEV_SIGNING
     required: true
   KEYSTORE_FILE:
     description: 'Keystore sign file'
@@ -143,26 +143,26 @@ runs:
         repository: Appdome/appdome-api-python
         ref: refs/heads/main
         path: appdome
-    - name: List files (debug)
-      run: |
-        echo "Listing all files recursively:"
-        ls -alR
-      shell: bash
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+        path: actions
     - name: Setup Virtual Environment
       run: |
-        chmod +x ./setup_venv.sh
-        ./setup_venv.sh
+        chmod +x ./actions/setup_venv.sh
+        ./actions/setup_venv.sh
       shell: bash
     - name: Install Firebase Tools
       run: curl -sL firebase.tools | bash
       shell: bash
     - name: Set permissions for action scripts
       run: |
-        chmod +x ./actions/appdome_build_sign.py
-        chmod +x ./actions/files_manager.py
+        chmod +x ./actions/actions/appdome_build_sign.py
+        chmod +x ./actions/actions/files_manager.py
       shell: bash
     - name: Run download action files
-      run: appdome_virtual_env/bin/python3 ./actions/files_manager.py \
+      run: appdome_virtual_env/bin/python3 ./actions/actions/files_manager.py \
         -a "${{ inputs.APP_FILE }}" \
         -k "${{ inputs.KEYSTORE_FILE }}" \
         -c "${{ inputs.CERTIFICATE_FILE }}" \
@@ -170,7 +170,7 @@ runs:
         -e "${{ inputs.ENTITLEMENTS_FILE }}"
       shell: bash
     - name: Run appdome build and sign
-      run: appdome_virtual_env/bin/python3 ./actions/appdome_build_sign.py \
+      run: appdome_virtual_env/bin/python3 ./actions/actions/appdome_build_sign.py \
         -sign ${{ inputs.SIGN_OPTIONS }} \
         -api_key ${{ inputs.APPDOME_API_TOKEN }} \
         -fs ${{ inputs.FUSION_SET_ID }} \
