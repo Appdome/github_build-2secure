@@ -143,37 +143,53 @@ runs:
         repository: Appdome/appdome-api-python
         ref: refs/heads/main
         path: appdome
-    - name: Cloning actions
-      uses: actions/checkout@master
-      with:
-        repository: Appdome/github_build-2secure
-        ref: refs/heads/main
-        path: actions
     - name: Setup Virtual Environment
       run: |
-        chmod +x ./actions/setup_venv.sh
-        ./actions/setup_venv.sh
+        chmod +x ./setup_venv.sh
+        ./setup_venv.sh
       shell: bash
-    - name: Installing firebase tools
+    - name: Install Firebase Tools
+      run: curl -sL firebase.tools | bash
+      shell: bash
+    - name: Set permissions for action scripts
       run: |
-        curl -sL firebase.tools | bash
-      shell: bash
-    - name: permissions
-      run: chmod +x ./actions/actions/appdome_build_sign.py | chmod +x ./actions/actions/files_manager.py
+        chmod +x ./actions/appdome_build_sign.py
+        chmod +x ./actions/files_manager.py
       shell: bash
     - name: Run download action files
-      run: appdome_virtual_env/bin/python3 ./actions/actions/files_manager.py -a "${{ inputs.APP_FILE }}" -k "${{ inputs.KEYSTORE_FILE }}" -c "${{ inputs.CERTIFICATE_FILE }}" -pp "${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}" -e "${{ inputs.ENTITLEMENTS_FILE }}"
+      run: appdome_virtual_env/bin/python3 ./actions/files_manager.py \
+        -a "${{ inputs.APP_FILE }}" \
+        -k "${{ inputs.KEYSTORE_FILE }}" \
+        -c "${{ inputs.CERTIFICATE_FILE }}" \
+        -pp "${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}" \
+        -e "${{ inputs.ENTITLEMENTS_FILE }}"
       shell: bash
-    - name: Run appdome bash action files
-      run: appdome_virtual_env/bin/python3 ./actions/actions/appdome_build_sign.py -sign ${{ inputs.SIGN_OPTIONS }} -api_key ${{ inputs.APPDOME_API_TOKEN }} -fs ${{ inputs.FUSION_SET_ID }} -cp ${{ inputs.CERTIFICATE_PASSWORD }} -kp ${{ inputs.KEYSTORE_PASSWORD }} -ka ${{ inputs.KEYSTORE_ALIAS }} -kkp ${{ inputs.KEYSTORE_KEY_PASSWORD }} -team_id ${{ steps.convention-fix.outputs.TEAM_ID }} -google-play-signing ${{ steps.convention-fix.outputs.GOOGLE_PLAY_SIGNING }} -signing_fingerprint ${{ inputs.SIGN_FINGERPRINT }} -bl ${{ inputs.BUILD_WITH_LOGS }} --sign_second_output ${{inputs.SECOND_OUTPUT}} -bt ${{inputs.BUILD_TO_TEST}} -o ${{inputs.OUTPUT_APP_NAME}} -faid ${{inputs.FIREBASE_APP_ID}} -dd_api_key ${{inputs.DATADOG_API_KEY}}
+    - name: Run appdome build and sign
+      run: appdome_virtual_env/bin/python3 ./actions/appdome_build_sign.py \
+        -sign ${{ inputs.SIGN_OPTIONS }} \
+        -api_key ${{ inputs.APPDOME_API_TOKEN }} \
+        -fs ${{ inputs.FUSION_SET_ID }} \
+        -cp ${{ inputs.CERTIFICATE_PASSWORD }} \
+        -kp ${{ inputs.KEYSTORE_PASSWORD }} \
+        -ka ${{ inputs.KEYSTORE_ALIAS }} \
+        -kkp ${{ inputs.KEYSTORE_KEY_PASSWORD }} \
+        -team_id ${{ steps.convention-fix.outputs.TEAM_ID }} \
+        -google-play-signing ${{ steps.convention-fix.outputs.GOOGLE_PLAY_SIGNING }} \
+        -signing_fingerprint ${{ inputs.SIGN_FINGERPRINT }} \
+        -bl ${{ inputs.BUILD_WITH_LOGS }} \
+        --sign_second_output ${{ inputs.SECOND_OUTPUT }} \
+        -bt ${{ inputs.BUILD_TO_TEST }} \
+        -o ${{ inputs.OUTPUT_APP_NAME }} \
+        -faid ${{ inputs.FIREBASE_APP_ID }} \
+        -dd_api_key ${{ inputs.DATADOG_API_KEY }}
       shell: bash
     - name: Determine OUTPUT_APP_NAME directory
       id: get-output-dir
       run: |
         OUTPUT_APP_NAME="${{ inputs.OUTPUT_APP_NAME }}"
-        if [ -z "$OUTPUT_APP_NAME" ] || [ "$OUTPUT_APP_NAME" == "None" ]; then # Default values
+        if [ -z "$OUTPUT_APP_NAME" ] || [ "$OUTPUT_APP_NAME" == "None" ]; then
           OUTPUT_PATH="./output/"
-          OUTPUT_APP_NAME_WITHOUT_EXTENSION="Appdome_secured_app" 
+          OUTPUT_APP_NAME_WITHOUT_EXTENSION="Appdome_secured_app"
         elif [[ "$OUTPUT_APP_NAME" == */* ]]; then
           OUTPUT_PATH="$(dirname "$OUTPUT_APP_NAME")/"
           OUTPUT_APP_NAME_WITHOUT_EXTENSION=$(basename -- "$OUTPUT_APP_NAME" | cut -d. -f1)
@@ -184,8 +200,6 @@ runs:
         echo "OUTPUT_DIR=$OUTPUT_PATH" >> $GITHUB_OUTPUT
         echo "OUTPUT_APP_NAME_WITHOUT_EXTENSION=$OUTPUT_APP_NAME_WITHOUT_EXTENSION" >> $GITHUB_OUTPUT
       shell: bash
-      env:
-        INPUTS_OUTPUT_APP_NAME: ${{ inputs.OUTPUT_APP_NAME }}
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -197,10 +211,10 @@ runs:
     - name: Find secure app file
       id: secure_app_file
       run: |
-         FILE=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}.*" )
-         echo "APPDOME_SECURED_APP=$FILE" >> $GITHUB_ENV
-         FILE_SECOND_OUTPUT=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}_second_output.apk" )
-         if [ -e "$FILE_SECOND_OUTPUT" ]; then
-            echo "APPDOME_SECURED_APP_SECOND_OUTPUT=$FILE_SECOND_OUTPUT" >> $GITHUB_ENV
-         fi
+        FILE=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}.*")
+        echo "APPDOME_SECURED_APP=$FILE" >> $GITHUB_ENV
+        FILE_SECOND_OUTPUT=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}_second_output.apk")
+        if [ -e "$FILE_SECOND_OUTPUT" ]; then
+          echo "APPDOME_SECURED_APP_SECOND_OUTPUT=$FILE_SECOND_OUTPUT" >> $GITHUB_ENV
+        fi
       shell: bash
