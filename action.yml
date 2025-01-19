@@ -143,6 +143,9 @@ runs:
         repository: Appdome/appdome-api-python
         ref: refs/heads/main
         path: appdome
+    - name: List files (debug)
+      run: ls -al
+      shell: bash
     - name: Setup Virtual Environment
       run: |
         chmod +x ./setup_venv.sh
