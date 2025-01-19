@@ -144,7 +144,9 @@ runs:
         ref: refs/heads/main
         path: appdome
     - name: List files (debug)
-      run: ls -al
+      run: |
+        echo "Listing all files recursively:"
+        ls -alR
       shell: bash
     - name: Setup Virtual Environment
       run: |
