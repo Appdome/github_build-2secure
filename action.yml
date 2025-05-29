@@ -116,6 +116,10 @@ inputs:
     description: 'Data Dog API_KEY (required for DataDog Deobfuscation)'
     default: "None"
     required: false
+  DYNAMIC_CERTIFICATES:
+    description: 'Dynamic certificates zip file for cert pinning'
+    default: "None"
+    required: false
 runs:
   using: "composite"
   steps:
@@ -141,13 +145,13 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/appdome-api-python
-        ref: refs/heads/main
+        ref: refs/heads/add-dynamic-certificate
         path: appdome
     - name: Cloning actions
       uses: actions/checkout@master
       with:
         repository: Appdome/github_build-2secure
-        ref: refs/heads/main
+        ref: refs/heads/dynamic_certificates
         path: actions
     - name: Setup Virtual Environment
       run: |
@@ -162,7 +166,7 @@ runs:
       run: chmod +x ./actions/actions/appdome_build_sign.py | chmod +x ./actions/actions/files_manager.py
       shell: bash
     - name: Run download action files
-      run: appdome_virtual_env/bin/python3 ./actions/actions/files_manager.py -a "${{ inputs.APP_FILE }}" -k "${{ inputs.KEYSTORE_FILE }}" -c "${{ inputs.CERTIFICATE_FILE }}" -pp "${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}" -e "${{ inputs.ENTITLEMENTS_FILE }}"
+      run: appdome_virtual_env/bin/python3 ./actions/actions/files_manager.py -a "${{ inputs.APP_FILE }}" -k "${{ inputs.KEYSTORE_FILE }}" -c "${{ inputs.CERTIFICATE_FILE }}" -pp "${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}" -e "${{ inputs.ENTITLEMENTS_FILE }}" -dc "${{ inputs.DYNAMIC_CERTIFICATES }}"
       shell: bash
     - name: Run appdome bash action files
       run: appdome_virtual_env/bin/python3 ./actions/actions/appdome_build_sign.py -sign ${{ inputs.SIGN_OPTIONS }} -api_key ${{ inputs.APPDOME_API_TOKEN }} -fs ${{ inputs.FUSION_SET_ID }} -cp ${{ inputs.CERTIFICATE_PASSWORD }} -kp ${{ inputs.KEYSTORE_PASSWORD }} -ka ${{ inputs.KEYSTORE_ALIAS }} -kkp ${{ inputs.KEYSTORE_KEY_PASSWORD }} -team_id ${{ steps.convention-fix.outputs.TEAM_ID }} -google-play-signing ${{ steps.convention-fix.outputs.GOOGLE_PLAY_SIGNING }} -signing_fingerprint ${{ inputs.SIGN_FINGERPRINT }} -bl ${{ inputs.BUILD_WITH_LOGS }} --sign_second_output ${{inputs.SECOND_OUTPUT}} -bt ${{inputs.BUILD_TO_TEST}} -o ${{inputs.OUTPUT_APP_NAME}} -faid ${{inputs.FIREBASE_APP_ID}} -dd_api_key ${{inputs.DATADOG_API_KEY}}

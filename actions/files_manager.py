@@ -18,6 +18,8 @@ def parse_args():
                         help="provision_profiles", default=None)
     parser.add_argument("-e", dest='entitlements', required=False,
                         help="entitlements", default=None)
+    parser.add_argument("-dc", dest='dynamic_certificates', required=False,
+                        help="dynamic_certificates", default=None)
     return parser.parse_args()
 
 
@@ -68,6 +70,7 @@ def main():
     certificate = args.certificate
     provision_profiles = args.provision_profiles
     entitlements = args.entitlements
+    dynamic_certificates = args.dynamic_certificates
     ext = None
     ios_flag = None
     if '.ipa' in app_file:
@@ -141,6 +144,19 @@ def main():
                 copy_files(path.strip(), f"./files/entitlements/{index}.plist")
         else:
             print(f"Error couldn't compose {entitlements}")
+            exit(1)
+
+    if dynamic_certificates and dynamic_certificates != "None":
+        if is_base64(dynamic_certificates):
+            decode_base64(dynamic_certificates, "./files/dynamic_certificates.zip")
+        elif dynamic_certificates.startswith('htt'):
+            for index, url in enumerate(dynamic_certificates.split(',')):
+                download_file(url.strip(), f"./files/dynamic_certificates.zip")
+        elif os.path.exists(dynamic_certificates.split(',')[0]):
+            for index, path in enumerate(dynamic_certificates.split(',')):
+                copy_files(path.strip(), f"./files/dynamic_certificates.zip")
+        else:
+            print(f"Error couldn't compose {dynamic_certificates}")
             exit(1)
 
 

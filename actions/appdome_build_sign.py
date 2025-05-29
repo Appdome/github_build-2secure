@@ -135,6 +135,8 @@ def main():
         if os.path.exists("./files/provision_profiles") else ""
     entitlements = f"--entitlements {' '.join(glob.glob('./files/entitlements/*'))}" \
         if os.path.exists("./files/entitlements") else ""
+    dynamic_certificates = f"--cert_pinning_zip {' '.join(glob.glob('./files/dynamic_certificates.zip'))}" \
+        if os.path.exists("./files/dynamic_certificates.zip") else ""
 
     validate_args(platform=platform, arguments=args, keystore_file=keystore_file, provision_profiles=provision_profiles,
                   entitlements=entitlements, keystore_pass=keystore_pass)
@@ -158,7 +160,7 @@ def main():
               f"--certificate_output {output_path}/certificate.pdf {keystore_alias} {keystore_key_pass} " \
               f"{provision_profiles} {entitlements}{build_with_logs}{sign_second_output}{build_to_test} " \
               f"--deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {google_play_signing} " \
-              f"{signing_fingerprint} {firebase_app_id} {datadog_api_key}"
+              f"{signing_fingerprint} {firebase_app_id} {datadog_api_key} {dynamic_certificates}"
 
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
 
@@ -171,7 +173,7 @@ def main():
               f"--output {output_path}/{output_file_name}{app_ext} --certificate_output {output_path}/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles}{build_with_logs}{sign_second_output} " \
               f"{build_to_test} --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip " \
-              f"{firebase_app_id} {datadog_api_key}"
+              f"{firebase_app_id} {datadog_api_key} {dynamic_certificates}"
 
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
 
@@ -184,7 +186,7 @@ def main():
               f"--output {output_path}/{output_file_name}.sh --certificate_output {output_path}/certificate.pdf " \
               f"{google_play_signing} {signing_fingerprint} {provision_profiles} {entitlements}{build_with_logs} " \
               f"{build_to_test}  --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip " \
-              f"{firebase_app_id} {datadog_api_key}"
+              f"{firebase_app_id} {datadog_api_key} {dynamic_certificates}"
 
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
     else:
