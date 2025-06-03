@@ -165,6 +165,12 @@ runs:
     - name: permissions
       run: chmod +x ./actions/actions/appdome_build_sign.py | chmod +x ./actions/actions/files_manager.py
       shell: bash
+    - name: Echo inputs
+      run: echo '${{ inputs }}'
+      shell: bash
+    - name: Echo download action files
+      run: echo 'appdome_virtual_env/bin/python3 ./actions/actions/files_manager.py -a "${{ inputs.APP_FILE }}" -k "${{ inputs.KEYSTORE_FILE }}" -c "${{ inputs.CERTIFICATE_FILE }}" -pp "${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}" -e "${{ inputs.ENTITLEMENTS_FILE }}" -dc "${{ inputs.DYNAMIC_CERTIFICATES }}"'
+      shell: bash
     - name: Run download action files
       run: appdome_virtual_env/bin/python3 ./actions/actions/files_manager.py -a "${{ inputs.APP_FILE }}" -k "${{ inputs.KEYSTORE_FILE }}" -c "${{ inputs.CERTIFICATE_FILE }}" -pp "${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}" -e "${{ inputs.ENTITLEMENTS_FILE }}" -dc "${{ inputs.DYNAMIC_CERTIFICATES }}"
       shell: bash
