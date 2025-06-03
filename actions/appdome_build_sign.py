@@ -135,7 +135,7 @@ def main():
         if os.path.exists("./files/provision_profiles") else ""
     entitlements = f"--entitlements {' '.join(glob.glob('./files/entitlements/*'))}" \
         if os.path.exists("./files/entitlements") else ""
-    dynamic_certificates = f"--cert_pinning_zip {' '.join(glob.glob('./files/dynamic_certificates.zip'))}" \
+    dynamic_certificates = f"--cert_pinning_zip {glob.glob('./files/dynamic_certificates.zip')[0]}" \
         if os.path.exists("./files/dynamic_certificates.zip") else ""
 
     validate_args(platform=platform, arguments=args, keystore_file=keystore_file, provision_profiles=provision_profiles,
