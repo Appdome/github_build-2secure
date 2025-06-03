@@ -165,8 +165,32 @@ runs:
     - name: permissions
       run: chmod +x ./actions/actions/appdome_build_sign.py | chmod +x ./actions/actions/files_manager.py
       shell: bash
-    - name: Echo inputs
-      run: echo '${{ inputs }}'
+    - name: Echo all inputs
+      run: |
+        echo "APPDOME_API_TOKEN: ${{ inputs.APPDOME_API_TOKEN }}"
+        echo "APP_FILE: ${{ inputs.APP_FILE }}"
+        echo "FUSION_SET_ID: ${{ inputs.FUSION_SET_ID }}"
+        echo "SIGN_OPTIONS: ${{ inputs.SIGN_OPTIONS }}"
+        echo "KEYSTORE_FILE: ${{ inputs.KEYSTORE_FILE }}"
+        echo "MOBILE_PROVISION_PROFILE_FILE: ${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}"
+        echo "ENTITLEMENTS_FILE: ${{ inputs.ENTITLEMENTS_FILE }}"
+        echo "KEYSTORE_PASSWORD: ${{ inputs.KEYSTORE_PASSWORD }}"
+        echo "KEYSTORE_ALIAS: ${{ inputs.KEYSTORE_ALIAS }}"
+        echo "KEYSTORE_KEY_PASSWORD: ${{ inputs.KEYSTORE_KEY_PASSWORD }}"
+        echo "SIGN_FINGERPRINT: ${{ inputs.SIGN_FINGERPRINT }}"
+        echo "GOOGLE-PLAY-SIGNING: ${{ inputs.GOOGLE-PLAY-SIGNING }}"
+        echo "GOOGLE_PLAY_SIGNING: ${{ inputs.GOOGLE_PLAY_SIGNING }}"
+        echo "CERTIFICATE_FILE: ${{ inputs.CERTIFICATE_FILE }}"
+        echo "CERTIFICATE_PASSWORD: ${{ inputs.CERTIFICATE_PASSWORD }}"
+        echo "TEAM-ID: ${{ inputs.TEAM-ID }}"
+        echo "TEAM_ID: ${{ inputs.TEAM_ID }}"
+        echo "BUILD_WITH_LOGS: ${{ inputs.BUILD_WITH_LOGS }}"
+        echo "SECOND_OUTPUT: ${{ inputs.SECOND_OUTPUT }}"
+        echo "OUTPUT_APP_NAME: ${{ inputs.OUTPUT_APP_NAME }}"
+        echo "BUILD_TO_TEST: ${{ inputs.BUILD_TO_TEST }}"
+        echo "FIREBASE_APP_ID: ${{ inputs.FIREBASE_APP_ID }}"
+        echo "DATADOG_API_KEY: ${{ inputs.DATADOG_API_KEY }}"
+        echo "DYNAMIC_CERTIFICATES: ${{ inputs.DYNAMIC_CERTIFICATES }}"
       shell: bash
     - name: Echo download action files
       run: echo 'appdome_virtual_env/bin/python3 ./actions/actions/files_manager.py -a "${{ inputs.APP_FILE }}" -k "${{ inputs.KEYSTORE_FILE }}" -c "${{ inputs.CERTIFICATE_FILE }}" -pp "${{ inputs.MOBILE_PROVISION_PROFILE_FILE }}" -e "${{ inputs.ENTITLEMENTS_FILE }}" -dc "${{ inputs.DYNAMIC_CERTIFICATES }}"'
