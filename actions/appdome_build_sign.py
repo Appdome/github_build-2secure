@@ -162,6 +162,7 @@ def main():
               f"--deobfuscation_script_output {output_path}/deobfuscation_scripts.zip {google_play_signing} " \
               f"{signing_fingerprint} {firebase_app_id} {datadog_api_key} {dynamic_certificates}"
 
+        print(f"running command: {cmd}")
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
 
     elif sign_option == 'PRIVATE_SIGNING':
@@ -175,6 +176,7 @@ def main():
               f"{build_to_test} --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip " \
               f"{firebase_app_id} {datadog_api_key} {dynamic_certificates}"
 
+        print(f"running command: {cmd}")
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
 
     elif sign_option == 'AUTO_DEV_SIGNING':
@@ -188,6 +190,7 @@ def main():
               f"{build_to_test}  --deobfuscation_script_output {output_path}/deobfuscation_scripts.zip " \
               f"{firebase_app_id} {datadog_api_key} {dynamic_certificates}"
 
+        print(f"running command: {cmd}")
         subprocess.run(cmd.split(), env=new_env, check=True, text=True)
     else:
         print("Signing option not found!\nValid signs: AUTO_SIGNING/PRIVATE_SIGNING/AUTO_DEV_SIGNING")
