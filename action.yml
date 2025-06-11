@@ -151,7 +151,7 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/github_build-2secure
-        ref: refs/tags/1.8.0
+        ref: refs/heads/main
         path: actions
     - name: Setup Virtual Environment
       run: |
