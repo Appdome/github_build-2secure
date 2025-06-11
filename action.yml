@@ -145,13 +145,13 @@ runs:
       uses: actions/checkout@master
       with:
         repository: Appdome/appdome-api-python
-        ref: refs/heads/add-dynamic-certificate
+        ref: refs/heads/main
         path: appdome
     - name: Cloning actions
       uses: actions/checkout@master
       with:
         repository: Appdome/github_build-2secure
-        ref: refs/heads/dynamic_certificates
+        ref: refs/tags/1.8.0
         path: actions
     - name: Setup Virtual Environment
       run: |
