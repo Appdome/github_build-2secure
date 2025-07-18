@@ -120,6 +120,10 @@ inputs:
     description: 'Dynamic certificates zip file for cert pinning'
     default: "None"
     required: false
+  UPLOAD_ARTIFACTS:
+    description: "Choose if Action Upload Generated Artifacts"
+    default: true
+    required: false
 runs:
   using: "composite"
   steps:
@@ -198,6 +202,7 @@ runs:
       env:
         INPUTS_OUTPUT_APP_NAME: ${{ inputs.OUTPUT_APP_NAME }}
     - name: Upload artifacts
+      if: inputs.UPLOAD_ARTIFACTS
       uses: actions/upload-artifact@v4
       with:
         name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
