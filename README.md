@@ -27,7 +27,7 @@ jobs:
         with:
           APPDOME_API_TOKEN: ${{secrets.APPDOME_API_KEY}}
           TEAM-ID: "Your team id in appdome"
-          APP_FILE: "# none_protected_application can be pass as path/on/repository OR https://download_link"
+          APP_FILE: "# non_protected_application can be pass as path/on/repository OR https://download_link"
           FUSION_SET_ID: "Appdome Fusion Set_Id Android/iOS"
           SIGN_OPTIONS: "SIGN_ON_APPDOME"
           BUILD_WITH_LOGS: true - Optional
@@ -61,7 +61,7 @@ jobs:
         with:
           APPDOME_API_TOKEN: ${{secrets.APPDOME_API_KEY}}
           TEAM-ID: "Your team id in appdome"
-          APP_FILE: "# none_protected_application can be pass as path/on/repository OR https://download_link"
+          APP_FILE: "# non_protected_application can be pass as path/on/repository OR https://download_link"
           FUSION_SET_ID: "Appdome Fusion Set_Id Android"
           SIGN_OPTIONS: "PRIVATE_SIGNING"
           BUILD_WITH_LOGS: true - Optional
@@ -93,7 +93,7 @@ jobs:
         with:
           APPDOME_API_TOKEN: ${{secrets.APPDOME_API_KEY}}
           TEAM-ID: "Your team id in appdome"
-          APP_FILE: "# none_protected_application can be pass as path/on/repository OR https://download_link"
+          APP_FILE: "# non_protected_application can be pass as path/on/repository OR https://download_link"
           FUSION_SET_ID: "Appdome Fusion Set_Id Android"
           SIGN_OPTIONS: "AUTO_DEV_SIGNING"
           SIGN_FINGERPRINT: ${{secrets.APPDOME_SIGN_FINGERPRINT}}
@@ -124,7 +124,7 @@ jobs:
         with:
           APPDOME_API_TOKEN: ${{secrets.APPDOME_API_KEY}}
           TEAM-ID: "Your team id in appdome"
-          APP_FILE: "# none_protected_application can be pass as path/on/repository OR https://download_link"
+          APP_FILE: "# non_protected_application can be pass as path/on/repository OR https://download_link"
           FUSION_SET_ID: "Appdome Fusion Set_Id iOS"
           SIGN_OPTIONS: "SIGN_ON_APPDOME"
           CERTIFICATE_FILE: ${{secrets.CERTIFICATE}}
@@ -160,7 +160,7 @@ jobs:
         with:
           APPDOME_API_TOKEN: ${{secrets.APPDOME_API_KEY}}
           TEAM-ID: "Your team id in appdome"
-          APP_FILE: "# none_protected_application can be pass as path/on/repository OR https://download_link"
+          APP_FILE: "# non_protected_application can be pass as path/on/repository OR https://download_link"
           FUSION_SET_ID: "Appdome Fusion Set_Id iOS"
           SIGN_OPTIONS: "PRIVATE_SIGNING"
           MOBILE_PROVISION_PROFILE_FILE: "<path/on/repository>,<path/on/repository>" ...
@@ -193,7 +193,7 @@ jobs:
         with:
           APPDOME_API_TOKEN: ${{secrets.APPDOME_API_KEY}}
           TEAM-ID: "Your team id in appdome"
-          APP_FILE: "# none_protected_application can be pass as path/on/repository OR https://download_link"
+          APP_FILE: "# non_protected_application can be pass as path/on/repository OR https://download_link"
           FUSION_SET_ID: "Appdome Fusion Set_Id iOS"
           SIGN_OPTIONS: "AUTO_DEV_SIGNING"
           MOBILE_PROVISION_PROFILE_FILE: "<path/on/repository>,<path/on/repository>" ...
