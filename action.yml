@@ -124,6 +124,7 @@ inputs:
     description: "Choose if Action Upload Generated Artifacts"
     default: true
     required: false
+    type: boolean
 runs:
   using: "composite"
   steps:
@@ -199,10 +200,17 @@ runs:
         echo "OUTPUT_DIR=$OUTPUT_PATH" >> $GITHUB_OUTPUT
         echo "OUTPUT_APP_NAME_WITHOUT_EXTENSION=$OUTPUT_APP_NAME_WITHOUT_EXTENSION" >> $GITHUB_OUTPUT
       shell: bash
-      env:
-        INPUTS_OUTPUT_APP_NAME: ${{ inputs.OUTPUT_APP_NAME }}
+    - name: Should upload artifacts?
+      id: upload-check
+      run: |
+        if [[ "${{ inputs.UPLOAD_ARTIFACTS }}" == "true" ]]; then
+          echo "UPLOAD=true" >> $GITHUB_OUTPUT
+        else
+          echo "UPLOAD=false" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
     - name: Upload artifacts
-      if: inputs.UPLOAD_ARTIFACTS
+      if: steps.upload-check.outputs.UPLOAD == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
