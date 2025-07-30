@@ -125,6 +125,12 @@ inputs:
     default: true
     required: false
     type: boolean
+  ARTIFACT_APP_SUFFIX:
+    description: "Append OUTPUT_APP_NAME to artifact name"
+    default: false
+    required: false
+    type: boolean
+
 runs:
   using: "composite"
   steps:
@@ -146,30 +152,36 @@ runs:
         echo "TEAM_ID=${TEAM_ID}" >> $GITHUB_OUTPUT
         echo "GOOGLE_PLAY_SIGNING=${GOOGLE_PLAY_SIGNING}" >> $GITHUB_OUTPUT
       shell: bash
+
     - name: Cloning appdome-api-python github repository
       uses: actions/checkout@master
       with:
         repository: Appdome/appdome-api-python
         ref: refs/heads/main
         path: appdome
+
     - name: Cloning actions
       uses: actions/checkout@master
       with:
         repository: Appdome/github_build-2secure
         ref: refs/heads/main
         path: actions
+
     - name: Setup Virtual Environment
       run: |
         chmod +x ./actions/setup_venv.sh
         ./actions/setup_venv.sh
       shell: bash
+
     - name: Installing firebase tools
       run: |
         curl -sL firebase.tools | bash
       shell: bash
+
     - name: permissions
       run: chmod +x ./actions/actions/appdome_build_sign.py | chmod +x ./actions/actions/files_manager.py
       shell: bash
+
     - name: Run download action files
       run: |
         appdome_virtual_env/bin/python3 ./actions/actions/files_manager.py \
@@ -180,16 +192,18 @@ runs:
           -e "${{ inputs.ENTITLEMENTS_FILE }}" \
           -dc "${{ inputs.DYNAMIC_CERTIFICATES }}"
       shell: bash
+
     - name: Run appdome bash action files
       run: appdome_virtual_env/bin/python3 ./actions/actions/appdome_build_sign.py -sign ${{ inputs.SIGN_OPTIONS }} -api_key ${{ inputs.APPDOME_API_TOKEN }} -fs ${{ inputs.FUSION_SET_ID }} -cp ${{ inputs.CERTIFICATE_PASSWORD }} -kp ${{ inputs.KEYSTORE_PASSWORD }} -ka ${{ inputs.KEYSTORE_ALIAS }} -kkp ${{ inputs.KEYSTORE_KEY_PASSWORD }} -team_id ${{ steps.convention-fix.outputs.TEAM_ID }} -google-play-signing ${{ steps.convention-fix.outputs.GOOGLE_PLAY_SIGNING }} -signing_fingerprint ${{ inputs.SIGN_FINGERPRINT }} -bl ${{ inputs.BUILD_WITH_LOGS }} --sign_second_output ${{inputs.SECOND_OUTPUT}} -bt ${{inputs.BUILD_TO_TEST}} -o ${{inputs.OUTPUT_APP_NAME}} -faid ${{inputs.FIREBASE_APP_ID}} -dd_api_key ${{inputs.DATADOG_API_KEY}}
       shell: bash
+
     - name: Determine OUTPUT_APP_NAME directory
       id: get-output-dir
       run: |
         OUTPUT_APP_NAME="${{ inputs.OUTPUT_APP_NAME }}"
         if [ -z "$OUTPUT_APP_NAME" ] || [ "$OUTPUT_APP_NAME" == "None" ]; then # Default values
           OUTPUT_PATH="./output/"
-          OUTPUT_APP_NAME_WITHOUT_EXTENSION="Appdome_secured_app" 
+          OUTPUT_APP_NAME_WITHOUT_EXTENSION="Appdome_secured_app"
         elif [[ "$OUTPUT_APP_NAME" == */* ]]; then
           OUTPUT_PATH="$(dirname "$OUTPUT_APP_NAME")/"
           OUTPUT_APP_NAME_WITHOUT_EXTENSION=$(basename -- "$OUTPUT_APP_NAME" | cut -d. -f1)
@@ -200,6 +214,7 @@ runs:
         echo "OUTPUT_DIR=$OUTPUT_PATH" >> $GITHUB_OUTPUT
         echo "OUTPUT_APP_NAME_WITHOUT_EXTENSION=$OUTPUT_APP_NAME_WITHOUT_EXTENSION" >> $GITHUB_OUTPUT
       shell: bash
+
     - name: Should upload artifacts?
       id: upload-check
       run: |
@@ -209,22 +224,36 @@ runs:
           echo "UPLOAD=false" >> $GITHUB_OUTPUT
         fi
       shell: bash
+
+    - name: Determine artifact name
+      id: artifact-name
+      run: |
+        if [[ "${{ inputs.ARTIFACT_APP_SUFFIX }}" == "true" ]]; then
+          ARTIFACT_NAME="${{ github.job }}_${{ github.run_number }}_${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}_Appdome_Outputs"
+        else
+          ARTIFACT_NAME="${{ github.job }}_${{ github.run_number }}_Appdome_Outputs"
+        fi
+        echo "NAME=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
+      shell: bash
+
     - name: Upload artifacts
       if: steps.upload-check.outputs.UPLOAD == 'true'
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ github.job }}_${{ github.run_number }}_Appdome_Outputs
+        name: ${{ steps.artifact-name.outputs.NAME }}
         path: ${{ steps.get-output-dir.outputs.OUTPUT_DIR }}
+
     - name: List files in output directory
       run: ls -al "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}"
       shell: bash
+
     - name: Find secure app file
       id: secure_app_file
       run: |
-         FILE=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}.*" )
-         echo "APPDOME_SECURED_APP=$FILE" >> $GITHUB_ENV
-         FILE_SECOND_OUTPUT=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}_second_output.apk" )
-         if [ -e "$FILE_SECOND_OUTPUT" ]; then
-            echo "APPDOME_SECURED_APP_SECOND_OUTPUT=$FILE_SECOND_OUTPUT" >> $GITHUB_ENV
-         fi
+        FILE=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}.*" )
+        echo "APPDOME_SECURED_APP=$FILE" >> $GITHUB_ENV
+        FILE_SECOND_OUTPUT=$(find "${{ steps.get-output-dir.outputs.OUTPUT_DIR }}" -type f -name "${{ steps.get-output-dir.outputs.OUTPUT_APP_NAME_WITHOUT_EXTENSION }}_second_output.apk" )
+        if [ -e "$FILE_SECOND_OUTPUT" ]; then
+          echo "APPDOME_SECURED_APP_SECOND_OUTPUT=$FILE_SECOND_OUTPUT" >> $GITHUB_ENV
+        fi
       shell: bash
