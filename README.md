@@ -41,6 +41,7 @@ jobs:
           FIREBASE_APP_ID: - Optional (required for Crashlytics) - App ID in Firebase project
           DATADOG_API_KEY: - Data Dog API_KEY (required for DataDog Deobfuscation)
           UPLOAD_ARTIFACTS: false - Optional, defaults to true. controls whether to upload the artifact or not
+          ARTIFACT_APP_SUFFIX: true - Optional, defaults to false. adds the OUTPUT_APP_NAME to the artifact name
 ```
 
 ### Android - PRIVATE_SIGNING
@@ -73,6 +74,7 @@ jobs:
           FIREBASE_APP_ID: - Optional (required for Crashlytics) - App ID in Firebase project
           DATADOG_API_KEY: - Data Dog API_KEY (required for DataDog Deobfuscation)****
           UPLOAD_ARTIFACTS: false - Optional, defaults to true. controls whether to upload the artifact or not
+          ARTIFACT_APP_SUFFIX: true - Optional, defaults to false. adds the OUTPUT_APP_NAME to the artifact name
 ```
 
 ### Android - AUTO_DEV_SIGNING
@@ -104,6 +106,7 @@ jobs:
           FIREBASE_APP_ID: - Optional (required for Crashlytics) - App ID in Firebase project
           DATADOG_API_KEY: - Data Dog API_KEY (required for DataDog Deobfuscation)
           UPLOAD_ARTIFACTS: false - Optional, defaults to true. controls whether to upload the artifact or not
+          ARTIFACT_APP_SUFFIX: true - Optional, defaults to false. adds the OUTPUT_APP_NAME to the artifact name
 ```
 
 ### iOS - AUTO_SIGNING
@@ -140,6 +143,7 @@ jobs:
           BUILD_TO_TEST: "lambdatest" | "bitbar" | "browserstack" | "saucelabs" | "perfecto" | "tosca" | "aws_device_farm" | "firebase" | "kobiton" | "katalon" | "None" - Optional - since version 1.1.0
           OUTPUT_APP_NAME: "Output_app_name" - Optional - since version 1.2.0. # Note: Since version 1.3.2, this also supports a full path.
           UPLOAD_ARTIFACTS: false - Optional, defaults to true. controls whether to upload the artifact or not
+          ARTIFACT_APP_SUFFIX: true - Optional, defaults to false. adds the OUTPUT_APP_NAME to the artifact name
 ```
 
 ### iOS - PRIVATE_SIGNING
@@ -173,6 +177,7 @@ jobs:
           BUILD_TO_TEST: "lambdatest" | "bitbar" | "browserstack" | "saucelabs" | "perfecto" | "tosca" | "aws_device_farm" | "firebase" | "kobiton" | "katalon" | "None" - Optional - since version 1.1.0
           OUTPUT_APP_NAME: "Output_app_name" - Optional - since version 1.2.0. # Note: Since version 1.3.2, this also supports a full path.
           UPLOAD_ARTIFACTS: false - Optional, defaults to true. controls whether to upload the artifact or not
+          ARTIFACT_APP_SUFFIX: true - Optional, defaults to false. adds the OUTPUT_APP_NAME to the artifact name
 ```
 
 ### iOS - AUTO_DEV_SIGNING
@@ -206,5 +211,6 @@ jobs:
           BUILD_TO_TEST: "lambdatest" | "bitbar" | "browserstack" | "saucelabs" | "perfecto" | "tosca" | "aws_device_farm" | "firebase" | "kobiton" | "katalon" | "None" - Optional - since version 1.1.0
           OUTPUT_APP_NAME: "Output_app_name" - Optional - since version 1.2.0. # Note: Since version 1.3.2, this also supports a full path.
           UPLOAD_ARTIFACTS: false - Optional, defaults to true. controls whether to upload the artifact or not
+          ARTIFACT_APP_SUFFIX: true - Optional, defaults to false. adds the OUTPUT_APP_NAME to the artifact name
 ```
 
