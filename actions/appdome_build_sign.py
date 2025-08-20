@@ -80,10 +80,6 @@ def validate_args(platform, arguments, keystore_file, provision_profiles, entitl
             if keystore_pass == "None":
                 print("No certificate password specified")
                 error = True
-        if arguments.sign_option in ["SIGN_ON_APPDOME", "AUTO_DEV_SIGNING"]:
-            if len(entitlements) == 0:
-                print("No entitlements file specified")
-                error = True
     else:
         if arguments.sign_option == "SIGN_ON_APPDOME":
             if len(keystore_file) == 0:
