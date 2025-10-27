@@ -257,3 +257,13 @@ runs:
           echo "APPDOME_SECURED_APP_SECOND_OUTPUT=$FILE_SECOND_OUTPUT" >> $GITHUB_ENV
         fi
       shell: bash
+
+    - name: Set deobfuscation scripts zip environment variable
+      run: |
+        OUTPUT_DIR="${{ steps.get-output-dir.outputs.OUTPUT_DIR || './output' }}"
+        DEOBFUSCATION_SCRIPTS_ZIP_PATH="${OUTPUT_DIR%/}/deobfuscation_scripts.zip"
+        if [ -f "$DEOBFUSCATION_SCRIPTS_ZIP_PATH" ]; then
+          echo "DEOBFUSCATION_SCRIPTS_ZIP=$DEOBFUSCATION_SCRIPTS_ZIP_PATH" >> $GITHUB_ENV
+          echo "Deobfuscation zip file: $DEOBFUSCATION_SCRIPTS_ZIP_PATH"
+        fi
+      shell: bash
