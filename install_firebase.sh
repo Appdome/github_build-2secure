@@ -54,7 +54,8 @@ vlog "Installing firebase-tools (needed for Crashlytics mapping upload)..."
 MAX_PRIMARY_ATTEMPTS=3
 PRIMARY_RETRY_DELAY_SEC=2
 
-for attempt in $(seq 1 "$MAX_PRIMARY_ATTEMPTS"); do
+attempt=1
+while [ "$attempt" -le "$MAX_PRIMARY_ATTEMPTS" ]; do
   vlog "Primary install attempt ${attempt}/${MAX_PRIMARY_ATTEMPTS}..."
   if run_primary_install; then
     if firebase_works; then
@@ -66,6 +67,7 @@ for attempt in $(seq 1 "$MAX_PRIMARY_ATTEMPTS"); do
     vlog "Primary install failed; retrying in ${PRIMARY_RETRY_DELAY_SEC}s..."
     sleep "$PRIMARY_RETRY_DELAY_SEC"
   fi
+  attempt=$((attempt + 1))
 done
 
 log "Primary install failed; trying GitHub Releases binary..."
