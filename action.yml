@@ -174,8 +174,12 @@ runs:
       shell: bash
 
     - name: Installing firebase tools
+      if: ${{ inputs.FIREBASE_APP_ID != 'None' && inputs.FIREBASE_APP_ID != '' }}
+      env:
+        FIREBASE_APP_ID: ${{ inputs.FIREBASE_APP_ID }}
       run: |
-        curl -sL firebase.tools | bash
+        chmod +x "${{ github.action_path }}/install_firebase.sh"
+        "${{ github.action_path }}/install_firebase.sh"
       shell: bash
 
     - name: permissions
